@@ -6,6 +6,7 @@ import time
 from config.settings import settings
 from routes import farmer
 from routes import auth
+from routes import field
 
 app = FastAPI(
     title="Green Flora API",
@@ -35,6 +36,7 @@ async def add_request_timing(request: Request, call_next):
 
 app.include_router(farmer.router)
 app.include_router(auth.router)
+app.include_router(field.router)
 
 
 @app.get("/health")

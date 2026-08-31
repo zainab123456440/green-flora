@@ -1,0 +1,9 @@
+# Backend environment variables (contains API keys and secrets)
+.env
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+venv/
+.venv/
