@@ -18,6 +18,7 @@ entries like:
     ALIBABA_MODEL_STUDIO_KEY=
     ALIBABA_OSS_KEY=
     ALIBABA_OSS_SECRET=
+    GEMINI_API_KEY=
 """
 
 import os
@@ -79,6 +80,9 @@ class Settings:
         )
         self.alibaba_oss_key: str = os.getenv("ALIBABA_OSS_KEY", "")
         self.alibaba_oss_secret: str = os.getenv("ALIBABA_OSS_SECRET", "")
+
+        # Gemini (Crop Doctor image analysis)
+        self.gemini_api_key: str = os.getenv("GEMINI_API_KEY", "")
 
         # General app info
         self.app_name: str = "Green Flora API"

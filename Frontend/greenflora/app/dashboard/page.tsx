@@ -18,7 +18,6 @@ import {
   Sprout,
   Calendar,
   Wallet,
-  CloudSun,
   TrendingUp,
   Activity,
   Leaf,
@@ -51,7 +50,7 @@ import { useFields } from "@/Hooks/useFields";
 const QUICK_ACTIONS = [
   { label: "Manage fields", href: "/my-farm", enabled: true },
   { label: "Edit profile", href: "/profile", enabled: true },
-  { label: "Check weather", href: "/weather", enabled: false },
+  { label: "Check weather", href: "/weather", enabled: true },
   { label: "Diagnose crop", href: "/crop-doctor", enabled: false },
   { label: "Check market", href: "/market", enabled: false },
 ];
@@ -364,11 +363,6 @@ export default function DashboardPage() {
                 Coming soon
               </h2>
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                <ComingSoonCard
-                  title="Weather"
-                  icon={<CloudSun className="h-5 w-5" />}
-                  description="Localized weather forecasts and agricultural alerts for your farm location."
-                />
                 <ComingSoonCard
                   title="Market Prices"
                   icon={<TrendingUp className="h-5 w-5" />}

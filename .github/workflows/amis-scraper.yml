@@ -1,0 +1,45 @@
+# AMIS Daily Market Data Ingestion
+#
+# Runs every day at 06:00 UTC (11:00 AM PKT) to scrape the latest
+# wholesale crop/commodity prices from AMIS Pakistan (amis.pk) and
+# upsert them into the Green Flora Supabase database.
+#
+# Required GitHub Secrets:
+#   SUPABASE_URL           - Supabase project URL
+#   SUPABASE_SERVICE_KEY   - Supabase service-role key
+#
+# Manual trigger is also available via workflow_dispatch.
+
+name: AMIS Daily Market Data Ingestion
+
+on:
+  schedule:
+    # Every day at 06:00 UTC (11:00 AM Pakistan Standard Time).
+    # AMIS typically uploads daily rates by mid-morning PKT.
+    - cron: '0 6 * * *'
+  workflow_dispatch:  # Allow manual trigger from the Actions tab
+
+jobs:
+  scrape-amis:
+    name: Scrape AMIS prices
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r Scraper/requirements.txt
+
+      - name: Run AMIS scraper
+        run: python -m Scraper.run

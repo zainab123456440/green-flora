@@ -360,3 +360,57 @@ body {
 .leaflet-control-zoom a:hover {
   background: var(--gf-neutral-50) !important;
 }
+
+/* ---------------------------------------------------------------------------
+ * Weather Animations
+ * --------------------------------------------------------------------------- */
+
+@keyframes gf-rain-drop {
+  0%   { transform: translateY(-4px); opacity: 0; }
+  30%  { opacity: 1; }
+  100% { transform: translateY(10px); opacity: 0; }
+}
+
+@keyframes gf-cloud-drift {
+  0%   { transform: translateX(0); }
+  50%  { transform: translateX(4px); }
+  100% { transform: translateX(0); }
+}
+
+@keyframes gf-sun-glow {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.65; }
+}
+
+@keyframes gf-wind-sway {
+  0%   { transform: rotate(0deg); }
+  25%  { transform: rotate(6deg); }
+  75%  { transform: rotate(-6deg); }
+  100% { transform: rotate(0deg); }
+}
+
+@keyframes gf-snow-fall {
+  0%   { transform: translateY(-4px) rotate(0deg); opacity: 0; }
+  30%  { opacity: 1; }
+  100% { transform: translateY(10px) rotate(180deg); opacity: 0; }
+}
+
+.animate-gf-rain {
+  animation: gf-rain-drop 1s ease-in-out infinite;
+}
+
+.animate-gf-cloud {
+  animation: gf-cloud-drift 5s ease-in-out infinite;
+}
+
+.animate-gf-sun-glow {
+  animation: gf-sun-glow 3s ease-in-out infinite;
+}
+
+.animate-gf-wind {
+  animation: gf-wind-sway 2.5s ease-in-out infinite;
+}
+
+.animate-gf-snow {
+  animation: gf-snow-fall 2s ease-in-out infinite;
+}

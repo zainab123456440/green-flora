@@ -35,9 +35,8 @@ logger = logging.getLogger(__name__)
 # Column-name translation between the API contract and the actual DB schema.
 #
 # The fields table uses ``area`` rather than ``area_acres`` and currently
-# lacks ``soil_type`` / ``irrigation_method``.  The crop_cycles table
-# currently lacks ``crop_name`` / ``crop_stage``.  These mappings let the
-# service adapt gracefully until the columns are added.
+# lacks ``soil_type`` / ``irrigation_method``.  Crop-cycle crop names
+# live in the ``crops`` table, linked via crop_cycles.crop_id.
 # ---------------------------------------------------------------------------
 
 _FIELD_API_TO_DB = {
@@ -57,11 +56,11 @@ _CYCLE_API_TO_DB: dict[str, str] = {}
 
 _CYCLE_DB_TO_API: dict[str, str] = {}
 
-# Columns the crop_cycles table actually has.
+# Columns the crop_cycles table actually has (verified from live DB).
 _CYCLE_DB_COLS = {
-    "id", "field_id", "variety",
-    "planting_date", "expected_harvest_date",
-    "status", "created_at",
+    "id", "field_id", "crop_id", "variety",
+    "planting_date", "expected_harvest_date", "actual_harvest_date",
+    "status", "notes", "created_at", "updated_at",
 }
 
 
@@ -219,6 +218,107 @@ class FieldService:
                 "Crop cycle not found or does not belong to your farm."
             )
         return result.data[0]
+
+    # ------------------------------------------------------------------
+    # Crop linkage helpers (crop_name lives in the crops table)
+    # ------------------------------------------------------------------
+
+    def _get_farm_context_for_field(self, field_id: str) -> dict:
+        """Return ``{farm_id, farmer_id}`` for the farm owning *field_id*."""
+        result = (
+            supabase.table("fields")
+            .select("farm_id, farms!inner(farmer_id)")
+            .eq("id", field_id)
+            .limit(1)
+            .execute()
+        )
+        if not result.data:
+            return {}
+        row = result.data[0]
+        farm = row.get("farms") or {}
+        return {"farm_id": row["farm_id"], "farmer_id": farm.get("farmer_id")}
+
+    def _upsert_crop_for_cycle(
+        self, field_id: str, crop_name: str, crop_stage: str | None = None,
+    ) -> str | None:
+        """Find or create a ``crops`` row and return its *id*.
+
+        Used when creating/updating a crop cycle so that ``crop_id`` on
+        the cycle correctly links to the ``crops`` table.
+        """
+        ctx = self._get_farm_context_for_field(field_id)
+        if not ctx.get("farm_id"):
+            return None
+
+        # Try to find an existing crop with the same name on this farm.
+        query = (
+            supabase.table("crops")
+            .select("id")
+            .eq("farm_id", ctx["farm_id"])
+            .eq("crop_name", crop_name)
+            .limit(1)
+        )
+        if crop_stage:
+            query = query.eq("crop_stage", crop_stage)
+        result = query.execute()
+        if result.data:
+            return result.data[0]["id"]
+
+        # Not found — try matching by name only and update stage.
+        result = (
+            supabase.table("crops")
+            .select("id")
+            .eq("farm_id", ctx["farm_id"])
+            .eq("crop_name", crop_name)
+            .limit(1)
+            .execute()
+        )
+        if result.data:
+            crop_id = result.data[0]["id"]
+            if crop_stage:
+                supabase.table("crops").update(
+                    {"crop_stage": crop_stage}
+                ).eq("id", crop_id).execute()
+            return crop_id
+
+        # Create a new crops entry.
+        insert_data: dict = {
+            "farmer_id": ctx.get("farmer_id"),
+            "farm_id": ctx["farm_id"],
+            "crop_name": crop_name,
+        }
+        if crop_stage:
+            insert_data["crop_stage"] = crop_stage
+        result = supabase.table("crops").insert(insert_data).execute()
+        if result.data:
+            return result.data[0]["id"]
+        return None
+
+    def _resolve_cycle_crop_name(self, cycle: dict) -> dict:
+        """Populate *crop_name* (and *crop_stage*) from the ``crops`` table.
+
+        Mutates and returns *cycle*.  Does nothing when ``crop_id`` is
+        absent or ``crop_name`` is already set.
+        """
+        crop_id = cycle.get("crop_id")
+        if cycle.get("crop_name") or not crop_id:
+            return cycle
+        try:
+            result = (
+                supabase.table("crops")
+                .select("crop_name, crop_stage")
+                .eq("id", crop_id)
+                .limit(1)
+                .execute()
+            )
+            if result.data:
+                cycle["crop_name"] = result.data[0].get("crop_name")
+                cycle.setdefault(
+                    "crop_stage", result.data[0].get("crop_stage")
+                )
+        except Exception as exc:
+            logger.warning("Failed to resolve crop for cycle: %s", exc)
+        return cycle
 
     # ==================================================================
     # FIELDS
@@ -551,19 +651,29 @@ class FieldService:
     def _list_cycles_db(self, field_id: str) -> list[dict]:
         result = (
             supabase.table("crop_cycles")
-            .select("*")
+            .select("*, crops(crop_name, crop_stage)")
             .eq("field_id", field_id)
             .order("created_at", desc=True)
             .execute()
         )
         rows = result.data or []
-        return [_translate_from_db(r, _CYCLE_DB_TO_API) for r in rows]
+        cycles = []
+        for r in rows:
+            cycle = _translate_from_db(r, _CYCLE_DB_TO_API)
+            crops_data = cycle.pop("crops", None)
+            if crops_data and isinstance(crops_data, dict):
+                cycle.setdefault("crop_name", crops_data.get("crop_name"))
+                cycle.setdefault("crop_stage", crops_data.get("crop_stage"))
+            self._resolve_cycle_crop_name(cycle)
+            cycle.setdefault("crop_name", "Unknown")
+            cycles.append(cycle)
+        return cycles
 
     def _get_active_cycle_db(self, field_id: str) -> Optional[dict]:
         """Get the most recent active crop cycle for a field."""
         result = (
             supabase.table("crop_cycles")
-            .select("*")
+            .select("*, crops(crop_name, crop_stage)")
             .eq("field_id", field_id)
             .eq("status", "active")
             .order("created_at", desc=True)
@@ -572,57 +682,101 @@ class FieldService:
         )
         if not result.data:
             return None
-        return _translate_from_db(result.data[0], _CYCLE_DB_TO_API)
+        cycle = _translate_from_db(result.data[0], _CYCLE_DB_TO_API)
+        crops_data = cycle.pop("crops", None)
+        if crops_data and isinstance(crops_data, dict):
+            cycle.setdefault("crop_name", crops_data.get("crop_name"))
+            cycle.setdefault("crop_stage", crops_data.get("crop_stage"))
+        self._resolve_cycle_crop_name(cycle)
+        cycle.setdefault("crop_name", "Unknown")
+        return cycle
 
     def _create_cycle_db(self, field_id: str, data: dict) -> dict:
         insert_data = {"field_id": field_id, **data}
         insert_data = {k: v for k, v in insert_data.items() if v is not None}
+
+        # Link to the crops table via crop_id so crop_name is persisted.
+        crop_name = data.get("crop_name")
+        crop_stage = data.get("crop_stage")
+        if crop_name:
+            try:
+                crop_id = self._upsert_crop_for_cycle(
+                    field_id, crop_name, crop_stage,
+                )
+                if crop_id:
+                    insert_data["crop_id"] = crop_id
+            except Exception as exc:
+                logger.warning("Could not link crop for cycle: %s", exc)
+
         db_data = _translate_to_db(insert_data, _CYCLE_API_TO_DB, _CYCLE_DB_COLS)
         result = supabase.table("crop_cycles").insert(db_data).execute()
         cycle = _translate_from_db(result.data[0], _CYCLE_DB_TO_API)
-        # Ensure all API-expected keys exist (DB may lack some columns).
-        for key in ("crop_name", "crop_stage"):
-            cycle.setdefault(key, data.get(key))
+        # Ensure API-expected keys exist (populated from input data).
+        cycle.setdefault("crop_name", crop_name)
+        cycle.setdefault("crop_stage", crop_stage)
         return cycle
 
     def _update_cycle_db(self, cycle_id: str, updates: dict) -> dict:
         clean = {k: v for k, v in updates.items() if v is not None}
+
+        # Resolve the current cycle's farm context for crop upsert.
+        current = (
+            supabase.table("crop_cycles")
+            .select("*, fields!inner(farm_id)")
+            .eq("id", cycle_id)
+            .limit(1)
+            .execute()
+        )
+        field_id = None
+        existing_crop_id = None
+        if current.data:
+            field_id = current.data[0].get("field_id")
+            existing_crop_id = current.data[0].get("crop_id")
+
+        # If crop_name is being set/changed, upsert the crops link.
+        crop_name = clean.get("crop_name")
+        crop_stage = clean.get("crop_stage")
+        if crop_name and field_id:
+            try:
+                crop_id = self._upsert_crop_for_cycle(
+                    field_id, crop_name, crop_stage,
+                )
+                if crop_id:
+                    clean["crop_id"] = crop_id
+                    if existing_crop_id and crop_name:
+                        # Update the existing crops row name too.
+                        try:
+                            supabase.table("crops").update(
+                                {"crop_name": crop_name}
+                            ).eq("id", existing_crop_id).execute()
+                        except Exception:
+                            pass
+            except Exception as exc:
+                logger.warning("Could not link crop during update: %s", exc)
+
         if not clean:
-            row = (
-                supabase.table("crop_cycles")
-                .select("*")
-                .eq("id", cycle_id)
-                .limit(1)
-                .execute()
-            )
-            cycle = _translate_from_db(row.data[0], _CYCLE_DB_TO_API)
-            cycle.setdefault("crop_name", None)
-            cycle.setdefault("crop_stage", None)
+            if not current.data:
+                return {}
+            cycle = _translate_from_db(current.data[0], _CYCLE_DB_TO_API)
+            self._resolve_cycle_crop_name(cycle)
+            cycle.setdefault("crop_name", "Unknown")
             return cycle
 
         db_updates = _translate_to_db(clean, _CYCLE_API_TO_DB, _CYCLE_DB_COLS)
-        if not db_updates:
-            row = (
+        if db_updates:
+            result = (
                 supabase.table("crop_cycles")
-                .select("*")
+                .update(db_updates)
                 .eq("id", cycle_id)
-                .limit(1)
                 .execute()
             )
-            cycle = _translate_from_db(row.data[0], _CYCLE_DB_TO_API)
-            cycle.setdefault("crop_name", None)
-            cycle.setdefault("crop_stage", None)
-            return cycle
+            cycle = _translate_from_db(result.data[0], _CYCLE_DB_TO_API)
+        else:
+            cycle = _translate_from_db(current.data[0], _CYCLE_DB_TO_API)
 
-        result = (
-            supabase.table("crop_cycles")
-            .update(db_updates)
-            .eq("id", cycle_id)
-            .execute()
-        )
-        cycle = _translate_from_db(result.data[0], _CYCLE_DB_TO_API)
-        cycle.setdefault("crop_name", updates.get("crop_name"))
-        cycle.setdefault("crop_stage", updates.get("crop_stage"))
+        self._resolve_cycle_crop_name(cycle)
+        cycle.setdefault("crop_name", crop_name or "Unknown")
+        cycle.setdefault("crop_stage", crop_stage)
         return cycle
 
     def _delete_cycle_db(self, cycle_id: str) -> None:

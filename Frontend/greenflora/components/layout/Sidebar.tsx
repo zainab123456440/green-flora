@@ -28,9 +28,9 @@ const NAV_ITEMS: NavItem[] = [
   { label: "Dashboard", href: "/dashboard", icon: <LayoutDashboard className="h-4.5 w-4.5" />, enabled: true },
   { label: "My Farm", href: "/my-farm", icon: <MapPin className="h-4.5 w-4.5" />, enabled: true },
   { label: "Farmer Profile", href: "/profile", icon: <User className="h-4.5 w-4.5" />, enabled: true },
-  { label: "Weather", href: "/weather", icon: <CloudSun className="h-4.5 w-4.5" />, enabled: false },
-  { label: "Crop Doctor", href: "/crop-doctor", icon: <Stethoscope className="h-4.5 w-4.5" />, enabled: false },
-  { label: "Market", href: "/market", icon: <TrendingUp className="h-4.5 w-4.5" />, enabled: false },
+  { label: "Weather", href: "/weather", icon: <CloudSun className="h-4.5 w-4.5" />, enabled: true },
+  { label: "Crop Doctor", href: "/crop-doctor", icon: <Stethoscope className="h-4.5 w-4.5" />, enabled: true },
+  { label: "Market", href: "/market", icon: <TrendingUp className="h-4.5 w-4.5" />, enabled: true },
   { label: "Machinery", href: "/machinery", icon: <Tractor className="h-4.5 w-4.5" />, enabled: false },
   { label: "Experts", href: "/experts", icon: <Users className="h-4.5 w-4.5" />, enabled: false },
 ];

@@ -42,10 +42,10 @@ export interface DailyForecastEntry {
   precipitationProbabilityMax: number;
 }
 
-/** Soil conditions at the farm location. */
+/** Soil conditions at the farm location (modelled/estimated, not sensor). */
 export interface SoilData {
-  temperature: number;
-  moisture: number;
+  temperature: number | null;
+  moisture: number | null;
 }
 
 /** Complete weather data bundle for the farm. */
