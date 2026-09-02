@@ -1,6 +1,6 @@
 # AMIS Daily Market Data Ingestion
 #
-# Runs every day at 06:00 UTC (11:00 AM PKT) to scrape the latest
+# Runs every day at 04:00 UTC (09:00 AM PKT) to scrape the latest
 # wholesale crop/commodity prices from AMIS Pakistan (amis.pk) and
 # upsert them into the Green Flora Supabase database.
 #
