@@ -149,7 +149,7 @@ export default function MarketPage() {
           (!dataAvailable || commodities.length === 0) && (
             <EmptyState
               icon={<TrendingUp className="h-5 w-5" />}
-              title="Market prices coming soon"
+              title="No market prices yet"
               description="No AMIS market data has been collected yet. Daily prices appear automatically once the data pipeline runs — usually by mid-morning."
               action={
                 <button

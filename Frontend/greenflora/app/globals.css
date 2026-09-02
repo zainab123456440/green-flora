@@ -267,6 +267,12 @@ body {
   to   { opacity: 1; transform: translateY(0); }
 }
 
+/* Gentle pop used by small overlays (dropdowns, popovers). */
+@keyframes gf-pop {
+  from { opacity: 0; transform: scale(0.96) translateY(-2px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
 .animate-gf-float {
   animation: gf-float 8s ease-in-out infinite;
 }
@@ -281,6 +287,10 @@ body {
 
 .animate-gf-fade-in-up {
   animation: gf-fade-in-up 0.45s ease-out;
+}
+
+.animate-gf-pop {
+  animation: gf-pop 0.15s ease-out;
 }
 
 /* Staggered float for multiple leaf elements */
@@ -413,4 +423,33 @@ body {
 
 .animate-gf-snow {
   animation: gf-snow-fall 2s ease-in-out infinite;
+}
+
+/* ---------------------------------------------------------------------------
+ * Reduced Motion
+ * --------------------------------------------------------------------------- */
+
+/* Disable decorative and looping animations for users who prefer reduced
+ * motion. Entrance animations simply render in their final state. */
+@media (prefers-reduced-motion: reduce) {
+  .animate-gf-float,
+  .animate-gf-float-slow,
+  .animate-gf-float-fast,
+  .animate-gf-sway,
+  .animate-gf-sway-slow,
+  .animate-gf-pulse,
+  .animate-gf-rain,
+  .animate-gf-cloud,
+  .animate-gf-sun-glow,
+  .animate-gf-wind,
+  .animate-gf-snow,
+  .animate-gf-fade-in,
+  .animate-gf-fade-in-up,
+  .animate-gf-slide-in-left,
+  .animate-gf-pop {
+    animation: none;
+  }
+
+  /* Keep essential spinners usable but slower/simpler is not needed —
+     they communicate progress, so they stay. */
 }

@@ -1,38 +1,36 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useState } from "react";
 import {
   LayoutDashboard,
-  Sprout,
   MapPin,
   User,
   CloudSun,
   Stethoscope,
   TrendingUp,
-  Tractor,
-  Users,
+  LogOut,
   X,
   Leaf,
 } from "lucide-react";
 import type { ReactNode } from "react";
 
+import { useAuth } from "@/Hooks/useAuth";
+
 interface NavItem {
   label: string;
   href: string;
   icon: ReactNode;
-  enabled: boolean;
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { label: "Dashboard", href: "/dashboard", icon: <LayoutDashboard className="h-4.5 w-4.5" />, enabled: true },
-  { label: "My Farm", href: "/my-farm", icon: <MapPin className="h-4.5 w-4.5" />, enabled: true },
-  { label: "Farmer Profile", href: "/profile", icon: <User className="h-4.5 w-4.5" />, enabled: true },
-  { label: "Weather", href: "/weather", icon: <CloudSun className="h-4.5 w-4.5" />, enabled: true },
-  { label: "Crop Doctor", href: "/crop-doctor", icon: <Stethoscope className="h-4.5 w-4.5" />, enabled: true },
-  { label: "Market", href: "/market", icon: <TrendingUp className="h-4.5 w-4.5" />, enabled: true },
-  { label: "Machinery", href: "/machinery", icon: <Tractor className="h-4.5 w-4.5" />, enabled: false },
-  { label: "Experts", href: "/experts", icon: <Users className="h-4.5 w-4.5" />, enabled: false },
+  { label: "Dashboard", href: "/dashboard", icon: <LayoutDashboard className="h-4.5 w-4.5" /> },
+  { label: "My Farm", href: "/my-farm", icon: <MapPin className="h-4.5 w-4.5" /> },
+  { label: "Weather", href: "/weather", icon: <CloudSun className="h-4.5 w-4.5" /> },
+  { label: "Market Prices", href: "/market", icon: <TrendingUp className="h-4.5 w-4.5" /> },
+  { label: "Crop Doctor", href: "/crop-doctor", icon: <Stethoscope className="h-4.5 w-4.5" /> },
+  { label: "Farmer Profile", href: "/profile", icon: <User className="h-4.5 w-4.5" /> },
 ];
 
 interface SidebarProps {
@@ -42,6 +40,19 @@ interface SidebarProps {
 
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const pathname = usePathname();
+  const { logout } = useAuth();
+  const router = useRouter();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  async function handleLogout() {
+    setIsLoggingOut(true);
+    try {
+      await logout();
+    } finally {
+      // logout() clears tokens/session state; send the user to login.
+      router.replace("/login");
+    }
+  }
 
   return (
     <>
@@ -69,7 +80,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
             className="flex items-center gap-2.5"
             onClick={onClose}
           >
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-700">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary-600 to-primary-800 shadow-sm">
               <Leaf className="h-4.5 w-4.5 text-primary-50" />
             </div>
             <span className="text-base font-semibold tracking-tight text-neutral-900">
@@ -91,24 +102,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         <nav className="gf-scrollbar flex-1 overflow-y-auto px-3 py-4">
           <ul className="space-y-1">
             {NAV_ITEMS.map((item) => {
-              const isActive = pathname?.startsWith(item.href);
-
-              if (!item.enabled) {
-                return (
-                  <li key={item.href}>
-                    <span
-                      title="Coming soon"
-                      className="flex cursor-not-allowed items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-neutral-400"
-                    >
-                      <span className="text-neutral-300">{item.icon}</span>
-                      {item.label}
-                      <span className="ml-auto text-[10px] font-medium uppercase tracking-wider text-neutral-300">
-                        Soon
-                      </span>
-                    </span>
-                  </li>
-                );
-              }
+              const isActive = pathname?.startsWith(item.href) ?? false;
 
               return (
                 <li key={item.href}>
@@ -118,7 +112,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                     className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors duration-150
                       ${
                         isActive
-                          ? "bg-primary-700 text-primary-50 shadow-sm"
+                          ? "bg-gradient-to-r from-primary-700 to-primary-600 text-primary-50 shadow-sm"
                           : "text-neutral-700 hover:bg-neutral-100 hover:text-neutral-900"
                       }`}
                   >
@@ -137,15 +131,21 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
           </ul>
         </nav>
 
-        {/* Footer */}
-        <div className="border-t border-neutral-200 px-5 py-4">
-          <p className="text-[11px] text-neutral-400">
-            Green Flora v0.4 — Phase 4
+        {/* Footer — logout + version */}
+        <div className="border-t border-neutral-200 px-3 py-3">
+          <button
+            onClick={handleLogout}
+            disabled={isLoggingOut}
+            className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-neutral-600 transition-colors duration-150 hover:bg-danger-50 hover:text-danger-600 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            <LogOut className="h-4.5 w-4.5" />
+            {isLoggingOut ? "Signing out…" : "Log out"}
+          </button>
+          <p className="px-3 pt-2.5 text-[11px] text-neutral-400">
+            Green Flora
           </p>
         </div>
       </aside>
     </>
   );
 }
-
-export { NAV_ITEMS };

@@ -2,46 +2,48 @@
 
 **An AI-powered farming companion**
 
-Green Flora helps farmers make smarter, faster, and more profitable decisions by combining
-location-based weather forecasting, deep learning-based crop disease detection, an expert
-directory with direct call/booking, live market price trends, and Urdu voice interaction —
-all in one connected platform.
+Green Flora helps farmers make smarter, faster, and more informed farming decisions by combining location-based weather information, crop disease detection, agricultural market price trends, government farmer support, and an AI-powered assistant — all in one connected platform.
 
 ## Features
 
-- 🌦️ **Weather & Irrigation Advisory** — location-based forecasts with AI-generated
-  irrigation/fertilization suggestions
-- 🌿 **Crop Disease Detection** — upload a photo, get an instant diagnosis via a
-  fine-tuned CNN
-- 👨‍🌾 **Expert Directory** — browse agricultural experts and book/call them directly
-- 📈 **Market Price Trends** — track crop prices over time with a built-in profit
-  calculator
-- 🎙️ **Urdu Voice Interaction** — speak and listen to the app in Urdu
+* 🌦️ **Weather & Irrigation Advisory** — location-based weather information with agricultural insights and recommendations.
 
-### Planned / future additions
+* 🌿 **Crop Disease Detection** — upload a crop image and receive an AI-assisted disease analysis.
 
-- User accounts (save farms, history, favorites)
-- Additional features TBD as the project grows
+* 🏛️ **Government Farmer Support** — connect farmers with official government agricultural support through a publicly available farmer helpline. Green Flora does not maintain an individual expert directory or appointment-booking system.
+
+* 📈 **Market Price Trends** — view agricultural crop prices and price trends using available Pakistan market data, with prices presented in practical units such as per kg where applicable.
+
+* 🤖 **AI Farming Assistant** — planned central assistant that will allow farmers to interact with Green Flora through text chat and, later, voice interaction.
+
+## Planned / Future Additions
+
+* 🎙️ **Voice Interaction** — voice-based interaction with the Green Flora AI assistant, designed to support Urdu and potentially other regional languages.
+
+* 🤖 **Integrated AI Assistant** — a central assistant capable of using Green Flora's available weather, crop, market, and farming information to answer farmer questions.
+
+* 🌱 **Additional intelligent farming features** as the project grows.
 
 ## Tech Stack
 
-| Layer | Choice |
-|---|---|
-| Frontend | Next.js (React) + Tailwind CSS, built as a PWA |
-| Backend | FastAPI (Python) |
-| AI reasoning | Qwen via Alibaba Model Studio API |
-| Disease detection | Pretrained CNN (ResNet/EfficientNet) fine-tuned on PlantVillage, deployed on Alibaba PAI-EAS |
-| Voice (STT/TTS) | Browser Web Speech API → Deepgram (STT) + ElevenLabs (TTS) |
-| Weather data | OpenWeatherMap API |
-| Market price data | Pakistan AMIS / provincial data |
-| Database | PostgreSQL (or SQLite for local dev) |
-| Storage | Alibaba OSS |
-| Hosting | Alibaba Cloud ECS + API Gateway |
+| Layer             | Choice                                                                      |
+| ----------------- | --------------------------------------------------------------------------- |
+| Frontend          | Next.js (React) + Tailwind CSS, built as a PWA                              |
+| Backend           | FastAPI (Python)                                                            |
+| AI reasoning      | Qwen via Alibaba Model Studio API                                           |
+| Disease detection | Pretrained CNN (ResNet/EfficientNet), fine-tuned for crop disease detection |
+| Voice (future)    | Speech-to-Text / Text-to-Speech integration                                 |
+| Weather data      | OpenWeatherMap API                                                          |
+| Market price data | Pakistan AMIS / provincial market data                                      |
+| Database          | Supabase PostgreSQL                                                         |
+| Storage           | Supabase Storage / project storage as required                              |
+| Hosting           | According to the project's deployment configuration                         |
 
 ## Project Structure
 
-```
+```text
 green-flora/
+
 ├── frontend/          # Next.js app
 │   ├── app/
 │   ├── components/
@@ -61,9 +63,9 @@ green-flora/
 
 ### Prerequisites
 
-- Node.js 18+
-- Python 3.10+
-- API keys: OpenWeatherMap, Alibaba Cloud (Model Studio, PAI-EAS, OSS)
+* Node.js 18+
+* Python 3.10+
+* Required API keys according to the current implementation
 
 ### Frontend setup
 
@@ -83,39 +85,61 @@ pip install -r requirements.txt
 uvicorn main:app --reload
 ```
 
-### Environment variables
+### Environment Variables
 
-Create a `.env` file inside `backend/` (never commit this) with:
+Create the required `.env` files according to the current frontend/backend configuration.
 
-```
-OPENWEATHER_API_KEY=
-ALIBABA_MODEL_STUDIO_KEY=
-ALIBABA_OSS_KEY=
-ALIBABA_OSS_SECRET=
-DATABASE_URL=
-```
+**Never commit API keys, service-role keys, passwords, or other secrets to the repository.**
 
 ## Roadmap
 
-Built in vertical slices — one full feature at a time, frontend and backend together,
-so there's always something working end-to-end:
+Green Flora is being developed in focused vertical slices so that each major feature can be implemented and tested independently.
 
-1. Weather & Advisory
-2. Disease Detection
-3. Expert Directory
-4. Market Trends
-5. Urdu Voice Layer
-6. Auth / user accounts
-7. Additional features
+1. Weather & Agricultural Advisory
+2. Crop Disease Detection
+3. Market Price Trends
+4. Farmer/Government Support
+5. Authentication and user accounts
+6. Central AI Farming Assistant
+7. Urdu and regional-language voice interaction
+8. Additional intelligent farming features
+
+## Government Farmer Support
+
+Green Flora uses official public agricultural support information rather than maintaining a directory of individual professors, agricultural experts, or private consultants.
+
+The current farmer-support integration uses the official Punjab Agriculture Helpline information stored in Supabase.
+
+Current service:
+
+* **Service:** Punjab Agriculture Helpline
+* **Organization:** Agriculture Department, Government of Punjab
+* **Phone:** 0800-17000
+* **Hours:** 8:00 AM – 8:00 PM
+* **Purpose:** Agricultural support for farmers
+
+The contact information is stored in the `government_support` Supabase table so that it can be updated without changing the frontend code.
+
+Green Flora is not responsible for advice provided by external government services, and official contact information may change over time.
 
 ## Data Sources
 
-| Data need | Source |
-|---|---|
-| Weather | OpenWeatherMap API |
-| Disease detection training data | PlantVillage dataset (Kaggle) |
-| Market prices | Pakistan AMIS / provincial mandi rate publications |
-| Expert profiles | Seeded initially, real onboarding as a next step |
+| Data need                       | Source                                                          |
+| ------------------------------- | --------------------------------------------------------------- |
+| Weather                         | OpenWeatherMap API                                              |
+| Disease detection training data | PlantVillage dataset                                            |
+| Market prices                   | Pakistan AMIS / provincial market rate publications             |
+| Government farmer support       | Official Punjab Government / Agriculture Department information |
+
+## Product Direction
+
+Green Flora is designed around a simple principle:
+
+**Give farmers useful information first, then make it easy to ask for help.**
+
+The application does not currently use an individual expert directory or appointment-booking system.
+
+The future central AI assistant will bring the existing Green Flora capabilities together so farmers can ask questions naturally through text and voice instead of having to navigate through multiple separate features.
 
 ## License
 
