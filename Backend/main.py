@@ -10,6 +10,7 @@ from routes import field
 from routes import crop_doctor
 from routes import market
 from routes import support
+from routes import assistant
 
 app = FastAPI(
     title="Green Flora API",
@@ -43,6 +44,7 @@ app.include_router(field.router)
 app.include_router(crop_doctor.router)
 app.include_router(market.router)
 app.include_router(support.router)
+app.include_router(assistant.router)
 
 
 @app.get("/health")

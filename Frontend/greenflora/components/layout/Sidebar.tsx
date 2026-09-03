@@ -26,11 +26,11 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   { label: "Dashboard", href: "/dashboard", icon: <LayoutDashboard className="h-4.5 w-4.5" /> },
+  { label: "Farmer Profile", href: "/profile", icon: <User className="h-4.5 w-4.5" /> },
   { label: "My Farm", href: "/my-farm", icon: <MapPin className="h-4.5 w-4.5" /> },
   { label: "Weather", href: "/weather", icon: <CloudSun className="h-4.5 w-4.5" /> },
   { label: "Market Prices", href: "/market", icon: <TrendingUp className="h-4.5 w-4.5" /> },
   { label: "Crop Doctor", href: "/crop-doctor", icon: <Stethoscope className="h-4.5 w-4.5" /> },
-  { label: "Farmer Profile", href: "/profile", icon: <User className="h-4.5 w-4.5" /> },
 ];
 
 interface SidebarProps {

@@ -81,8 +81,37 @@ class Settings:
         self.alibaba_oss_key: str = os.getenv("ALIBABA_OSS_KEY", "")
         self.alibaba_oss_secret: str = os.getenv("ALIBABA_OSS_SECRET", "")
 
-        # Gemini (Crop Doctor image analysis)
+        # Gemini (Crop Doctor image analysis + AI Assistant fallback)
         self.gemini_api_key: str = os.getenv("GEMINI_API_KEY", "")
+
+        # OpenAI (AI Assistant — primary provider)
+        self.openai_api_key: str = os.getenv("OPENAI_API_KEY", "")
+
+        # AI Assistant models — overridable via env so providers can be
+        # swapped through configuration rather than code changes.
+        # Main reasoning model (primary brain of the assistant).
+        self.ai_main_model: str = os.getenv("AI_MAIN_MODEL", "gpt-5.6-luna")
+        # Cheap utility model for translation / language normalization /
+        # entity extraction (structured outputs).
+        self.ai_utility_model: str = os.getenv("AI_UTILITY_MODEL", "gpt-4o-mini")
+        # Speech-to-text model (supports Urdu / English / mixed speech).
+        self.ai_transcribe_model: str = os.getenv(
+            "AI_TRANSCRIBE_MODEL", "gpt-4o-mini-transcribe"
+        )
+        # Text-to-speech model for reading answers aloud.
+        self.ai_tts_model: str = os.getenv("AI_TTS_MODEL", "gpt-4o-mini-tts")
+        # Gemini fallback model (secondary provider when OpenAI is down).
+        self.ai_fallback_model: str = os.getenv(
+            "AI_FALLBACK_MODEL", "gemini-3.6-flash"
+        )
+        # Streaming chat can legitimately take a while (reasoning +
+        # tool calls + web search), audio endpoints should be quicker.
+        self.ai_stream_timeout_seconds: float = float(
+            os.getenv("AI_STREAM_TIMEOUT_SECONDS", "180")
+        )
+        self.ai_audio_timeout_seconds: float = float(
+            os.getenv("AI_AUDIO_TIMEOUT_SECONDS", "60")
+        )
 
         # General app info
         self.app_name: str = "Green Flora API"

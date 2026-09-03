@@ -1,14 +1,15 @@
 /**
  * app/dashboard/page.tsx
  *
- * The dashboard is the farmer's central overview — a calm, at-a-glance
- * summary rather than the full farming management system:
+ * The dashboard is the farmer's central overview — the Green Flora AI
+ * assistant is the heart of the page, framed by glanceable data:
  *
- *   1. Greeting hero
- *   2. My Farm snapshot (fields, area, crops, budget)
- *   3. Weather + Market price cards (deep links to the full pages)
- *   4. Government farmer support (official helpline from Supabase)
+ *   1. Greeting hero (AI-generated, localized, time-aware)
+ *   2. Weather + Market price cards (deep links to the full pages)
+ *   3. Green Flora AI assistant — chat + voice, the central experience
+ *   4. My Farm snapshot (fields, area, crops, budget)
  *   5. A few small, data-driven farming insights
+ *   6. Government farmer support (official helpline from Supabase)
  *
  * Detailed field/crop management lives on My Farm; full forecasts on
  * Weather; full price analysis on Market.
@@ -30,6 +31,7 @@ import {
 import AppShell from "@/components/layout/AppShell";
 import AuthGuard from "@/components/auth/AuthGuard";
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
+import AssistantPanel from "@/components/assistant/AssistantPanel";
 import StatCard from "@/components/dashboard/StatCard";
 import WeatherSummaryCard from "@/components/dashboard/WeatherSummaryCard";
 import MarketSummaryCard from "@/components/dashboard/MarketSummaryCard";
@@ -44,6 +46,7 @@ import { useFarmer } from "@/Hooks/useFarmer";
 import { useFields } from "@/Hooks/useFields";
 import { useWeather } from "@/Hooks/useWeather";
 import { useMarketCommodities } from "@/Hooks/useMarket";
+import { useGreeting } from "@/Hooks/useAssistant";
 import { pickDefaultCommodity } from "@/lib/marketUtils";
 
 export default function DashboardPage() {
@@ -54,6 +57,13 @@ export default function DashboardPage() {
     refresh: refreshFarmer,
   } = useFarmer();
   const { summary, isLoading: fieldsLoading, error: fieldsError } = useFields();
+
+  // AI greeting for the hero — localized and time-of-day aware. Falls
+  // back to a static greeting internally, so it can never break the page.
+  const {
+    greeting: aiGreeting,
+    isLoading: greetingLoading,
+  } = useGreeting();
 
   // Weather for the farmer's saved farm location. The dashboard never
   // prompts for device geolocation — the full Weather page handles that.
@@ -111,10 +121,35 @@ export default function DashboardPage() {
         {/* Success */}
         {!isLoading && !error && farmer && (
           <div className="animate-gf-fade-in">
-            <DashboardHeader farmerName={farmer.name} isDemo={farmer.is_demo} />
+            <DashboardHeader
+              farmerName={farmer.name}
+              greeting={greetingLoading ? null : aiGreeting.greeting}
+              isDemo={farmer.is_demo}
+            />
+
+            {/* Weather + Market quick access */}
+            <section className="grid gap-4 lg:grid-cols-2">
+              <WeatherSummaryCard
+                weather={weather}
+                isLoading={weatherLoading}
+                error={weatherError}
+                hasLocation={hasFarmLocation}
+              />
+              <MarketSummaryCard
+                commodity={featuredCommodity}
+                isLoading={marketLoading}
+                dataAvailable={dataAvailable}
+              />
+            </section>
+
+            {/* Green Flora AI — the central experience: ask anything about
+                weather, prices, crops or schemes, by voice or text. */}
+            <section id="assistant" className="mt-6 scroll-mt-24">
+              <AssistantPanel />
+            </section>
 
             {/* My Farm snapshot — the farmer's key numbers at a glance */}
-            <section>
+            <section className="mt-6">
               <div className="mb-3 flex items-center justify-between gap-3">
                 <div className="flex min-w-0 items-center gap-2">
                   <MapPin className="h-4.5 w-4.5 shrink-0 text-primary-600" />
@@ -176,27 +211,6 @@ export default function DashboardPage() {
               </div>
             </section>
 
-            {/* Weather + Market quick access */}
-            <div className="mt-6 grid gap-4 lg:grid-cols-2">
-              <WeatherSummaryCard
-                weather={weather}
-                isLoading={weatherLoading}
-                error={weatherError}
-                hasLocation={hasFarmLocation}
-              />
-              <MarketSummaryCard
-                commodity={featuredCommodity}
-                isLoading={marketLoading}
-                dataAvailable={dataAvailable}
-              />
-            </div>
-
-            {/* Government Farmer Support — official helpline record from
-                Supabase. Anchored so the sidebar can deep-link to it. */}
-            <section id="government-support" className="mt-6 scroll-mt-24">
-              <GovernmentSupportCard />
-            </section>
-
             {/* A few small, data-driven insights */}
             <FarmingInsights
               weather={weather}
@@ -206,6 +220,12 @@ export default function DashboardPage() {
               commodity={featuredCommodity}
               marketLoading={marketLoading}
             />
+
+            {/* Government Farmer Support — official helpline record from
+                Supabase. Anchored so the sidebar can deep-link to it. */}
+            <section id="government-support" className="mt-6 scroll-mt-24">
+              <GovernmentSupportCard />
+            </section>
           </div>
         )}
 
