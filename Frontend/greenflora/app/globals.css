@@ -183,6 +183,8 @@ body {
   font-family: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  top: 0px !important;
+  position: static !important;
 }
 
 /* Smooth transitions for interactive elements */
@@ -210,7 +212,68 @@ body {
   border-radius: var(--gf-radius-full);
 }
 
-/* Animation keyframes */
+/* ---------------------------------------------------------------------------
+ * Green Flora Language & Typography System
+ * --------------------------------------------------------------------------- */
+.urdu-mode,
+.urdu-mode body,
+.urdu-mode *,
+html[lang="ur"],
+html[lang="ur"] body,
+html[lang="ur"] * {
+  font-family: var(--font-urdu), serif !important;
+}
+
+.urdu-mode body,
+html[dir="rtl"] body {
+  direction: rtl;
+}
+
+/* Extra line-height so Nastaliq dots and diacritics are never cut off */
+.urdu-mode p,
+.urdu-mode span,
+.urdu-mode h1,
+.urdu-mode h2,
+.urdu-mode h3,
+.urdu-mode h4,
+.urdu-mode button,
+.urdu-mode label,
+.urdu-mode input,
+.urdu-mode textarea,
+.urdu-mode a,
+html[lang="ur"] p,
+html[lang="ur"] span,
+html[lang="ur"] h1,
+html[lang="ur"] h2,
+html[lang="ur"] h3,
+html[lang="ur"] h4,
+html[lang="ur"] button,
+html[lang="ur"] label,
+html[lang="ur"] input,
+html[lang="ur"] textarea,
+html[lang="ur"] a {
+  line-height: 2.1 !important;
+}
+
+/* ---------------------------------------------------------------------------
+ * Google Translate Overrides & UI Cleanup
+ * --------------------------------------------------------------------------- */
+.skiptranslate,
+.goog-te-banner-frame,
+#goog-gt-tt,
+.goog-te-balloon-frame {
+  display: none !important;
+  visibility: hidden !important;
+}
+
+.goog-text-highlight {
+  background: none !important;
+  box-shadow: none !important;
+}
+
+/* ---------------------------------------------------------------------------
+ * Animation keyframes
+ * --------------------------------------------------------------------------- */
 @keyframes gf-fade-in {
   from { opacity: 0; transform: translateY(4px); }
   to   { opacity: 1; transform: translateY(0); }
@@ -241,7 +304,6 @@ body {
 /* ---------------------------------------------------------------------------
  * Auth page animations
  * --------------------------------------------------------------------------- */
-
 @keyframes gf-float {
   0%   { transform: translateY(0) rotate(0deg); opacity: 0.12; }
   50%  { transform: translateY(-14px) rotate(3deg); opacity: 0.18; }
@@ -267,7 +329,6 @@ body {
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* Gentle pop used by small overlays (dropdowns, popovers). */
 @keyframes gf-pop {
   from { opacity: 0; transform: scale(0.96) translateY(-2px); }
   to   { opacity: 1; transform: scale(1) translateY(0); }
@@ -293,7 +354,6 @@ body {
   animation: gf-pop 0.15s ease-out;
 }
 
-/* Staggered float for multiple leaf elements */
 .animate-gf-float-slow {
   animation: gf-float 10s ease-in-out infinite;
 }
@@ -309,32 +369,26 @@ body {
 /* ---------------------------------------------------------------------------
  * Leaflet Map Overrides
  * --------------------------------------------------------------------------- */
-
-/* Ensure Leaflet containers respect border radius */
 .leaflet-container {
   border-radius: inherit;
   font-family: var(--font-geist-sans), system-ui, sans-serif;
   z-index: 1;
 }
 
-/* Farm marker custom styling */
 .gf-farm-marker {
   filter: hue-rotate(100deg) saturate(1.5);
 }
 
-/* Farm center icon — transparent background for divIcon */
 .gf-farm-center-icon {
   background: transparent !important;
   border: none !important;
 }
 
-/* Field marker — remove default Leaflet icon bg */
 .gf-field-marker {
   background: transparent !important;
   border: none !important;
 }
 
-/* Popup styling */
 .leaflet-popup-content-wrapper {
   border-radius: var(--gf-radius-lg);
   box-shadow: var(--gf-shadow-dropdown);
@@ -346,14 +400,12 @@ body {
   line-height: 1.5;
 }
 
-/* Attribution styling */
 .leaflet-control-attribution {
   font-size: 10px !important;
   background: rgba(255, 255, 255, 0.8) !important;
   border-radius: var(--gf-radius-sm) !important;
 }
 
-/* Zoom control styling */
 .leaflet-control-zoom {
   border: none !important;
   box-shadow: var(--gf-shadow-elevated) !important;
@@ -374,7 +426,6 @@ body {
 /* ---------------------------------------------------------------------------
  * Weather Animations
  * --------------------------------------------------------------------------- */
-
 @keyframes gf-rain-drop {
   0%   { transform: translateY(-4px); opacity: 0; }
   30%  { opacity: 1; }
@@ -428,9 +479,6 @@ body {
 /* ---------------------------------------------------------------------------
  * Reduced Motion
  * --------------------------------------------------------------------------- */
-
-/* Disable decorative and looping animations for users who prefer reduced
- * motion. Entrance animations simply render in their final state. */
 @media (prefers-reduced-motion: reduce) {
   .animate-gf-float,
   .animate-gf-float-slow,
@@ -449,7 +497,4 @@ body {
   .animate-gf-pop {
     animation: none;
   }
-
-  /* Keep essential spinners usable but slower/simpler is not needed —
-     they communicate progress, so they stay. */
 }

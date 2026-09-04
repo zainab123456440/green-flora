@@ -4,10 +4,6 @@
  * Compact dashboard card with the current weather at the farmer's saved
  * farm location, plus today's high/low and rain chance. Deep links to
  * the full Weather Intelligence page.
- *
- * When the farmer hasn't set a farm location, the card invites them to
- * add one in their profile — the dashboard never triggers a device
- * geolocation prompt.
  */
 
 import Link from "next/link";
@@ -23,11 +19,9 @@ interface WeatherSummaryCardProps {
   weather: WeatherData | null;
   isLoading: boolean;
   error: string | null;
-  /** True when the farmer has saved farm coordinates. */
   hasLocation: boolean;
 }
 
-/** Shimmer placeholder while the forecast loads. */
 function WeatherSkeleton() {
   return (
     <div className="flex items-center gap-4">
@@ -95,16 +89,18 @@ export default function WeatherSummaryCard({
             size={52}
           />
           <div className="min-w-0">
-            <p className="text-2xl font-semibold tracking-tight text-neutral-900">
-              {Math.round(weather.current.temperature)}°C
+            {/* Removed the 'C', just kept the degree symbol. 'notranslate' keeps the layout safe */}
+            <p className="text-2xl font-semibold tracking-tight text-neutral-900 notranslate">
+              {Math.round(weather.current.temperature)}°
             </p>
             <p className="truncate text-sm text-neutral-500">{info.label}</p>
           </div>
         </div>
         {today && (
           <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-neutral-500">
-            <span>
-              H {Math.round(today.tempMax)}° · L {Math.round(today.tempMin)}°
+            {/* Replaced the dot with a dash, kept just the degree symbols */}
+            <span className="inline-block notranslate">
+              H {Math.round(today.tempMax)}° - L {Math.round(today.tempMin)}°
             </span>
             <span className="inline-flex items-center gap-1">
               <Droplets className="h-3.5 w-3.5 text-info-500" />

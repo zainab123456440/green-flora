@@ -1,7 +1,8 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
+import { Geist, Geist_Mono, Noto_Nastaliq_Urdu } from "next/font/google";
+import Script from "next/script";
 import { AuthProvider } from "@/Hooks/useAuth";
+import { LanguageProvider } from "@/contexts/LanguageContext";
+import "./globals.css";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -13,24 +14,81 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: "Green Flora — Smart Agriculture for Pakistani Farmers",
-  description:
-    "A digital agriculture companion that helps Pakistani farmers make better decisions about crops, weather, markets, and farm management.",
-};
+const notoNastaliqUrdu = Noto_Nastaliq_Urdu({
+  variable: "--font-urdu",
+  subsets: ["arabic"],
+  weight: ["400", "500", "600", "700"],
+});
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      suppressHydrationWarning
+      className={`${geistSans.variable} ${geistMono.variable} ${notoNastaliqUrdu.variable} h-full antialiased`}
     >
-      <body className="min-h-full">
-        <AuthProvider>{children}</AuthProvider>
+      <head>
+        {/* REACT DOM CRASH FIX: Monkey Patch for Google Translate */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              if (typeof Node === 'function' && Node.prototype) {
+                const originalRemoveChild = Node.prototype.removeChild;
+                Node.prototype.removeChild = function (child) {
+                  if (child.parentNode !== this) {
+                    if (console) console.warn('React Crash Prevented: Cannot remove a child from a different parent.', child, this);
+                    return child;
+                  }
+                  return originalRemoveChild.apply(this, arguments);
+                };
+
+                const originalInsertBefore = Node.prototype.insertBefore;
+                Node.prototype.insertBefore = function (newNode, referenceNode) {
+                  if (referenceNode && referenceNode.parentNode !== this) {
+                    if (console) console.warn('React Crash Prevented: Cannot insert before a reference node from a different parent.', referenceNode, this);
+                    return newNode;
+                  }
+                  return originalInsertBefore.apply(this, arguments);
+                };
+              }
+            `,
+          }}
+        />
+      </head>
+      <body suppressHydrationWarning className="bg-gray-50 text-gray-900">
+        <AuthProvider>
+          <LanguageProvider>
+            {children}
+          </LanguageProvider>
+        </AuthProvider>
+
+        {/* Hidden Google Translate Mount Point */}
+        <div id="google_translate_element" style={{ display: "none" }} />
+
+        {/* Google Translate Init Script */}
+        <Script
+          id="google-translate-init"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+              function googleTranslateElementInit() {
+                new google.translate.TranslateElement({
+                  pageLanguage: 'en',
+                  includedLanguages: 'ur',
+                  autoDisplay: false
+                }, 'google_translate_element');
+              }
+            `,
+          }}
+        />
+        <Script
+          src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"
+          strategy="afterInteractive"
+        />
       </body>
     </html>
   );

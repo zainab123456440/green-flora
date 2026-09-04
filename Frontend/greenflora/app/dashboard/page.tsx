@@ -5,11 +5,12 @@
  * assistant is the heart of the page, framed by glanceable data:
  *
  *   1. Greeting hero (AI-generated, localized, time-aware)
- *   2. Weather + Market price cards (deep links to the full pages)
+ *   2. Today's Insight — a single block of data-driven insight cards
+ *      (weather, market, crop) built from FarmingInsights alone; no
+ *      separate Weather/Market summary row above it
  *   3. Green Flora AI assistant — chat + voice, the central experience
  *   4. My Farm snapshot (fields, area, crops, budget)
- *   5. A few small, data-driven farming insights
- *   6. Government farmer support (official helpline from Supabase)
+ *   5. Government farmer support (official helpline from Supabase)
  *
  * Detailed field/crop management lives on My Farm; full forecasts on
  * Weather; full price analysis on Market.
@@ -33,14 +34,13 @@ import AuthGuard from "@/components/auth/AuthGuard";
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import AssistantPanel from "@/components/assistant/AssistantPanel";
 import StatCard from "@/components/dashboard/StatCard";
-import WeatherSummaryCard from "@/components/dashboard/WeatherSummaryCard";
-import MarketSummaryCard from "@/components/dashboard/MarketSummaryCard";
 import GovernmentSupportCard from "@/components/dashboard/GovernmentSupportCard";
 import FarmingInsights from "@/components/dashboard/FarmingInsights";
 import { StatCardSkeleton, CardSkeleton } from "@/components/ui/LoadingState";
 import ErrorState from "@/components/ui/ErrorState";
 import EmptyState from "@/components/ui/EmptyState";
 import Button from "@/components/ui/Button";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 
 import { useFarmer } from "@/Hooks/useFarmer";
 import { useFields } from "@/Hooks/useFields";
@@ -72,13 +72,11 @@ export default function DashboardPage() {
   const {
     data: weather,
     isLoading: weatherLoading,
-    error: weatherError,
   } = useWeather(farmer?.farm_latitude, farmer?.farm_longitude);
 
   // Market: feature the crop the farmer actually grows, when we know it.
   const {
     commodities,
-    dataAvailable,
     isLoading: marketLoading,
   } = useMarketCommodities();
   const activeCropNames = summary
@@ -121,34 +119,35 @@ export default function DashboardPage() {
         {/* Success */}
         {!isLoading && !error && farmer && (
           <div className="animate-gf-fade-in">
+            {/* Language Toggle Button */}
+            <div className="mb-4 flex justify-end">
+              <LanguageSwitcher />
+            </div>
+
             <DashboardHeader
               farmerName={farmer.name}
               greeting={greetingLoading ? null : aiGreeting.greeting}
               isDemo={farmer.is_demo}
             />
 
-            {/* Weather + Market quick access */}
-            <section className="grid gap-4 lg:grid-cols-2">
-              <WeatherSummaryCard
+            {/* Today's Insight */}
+            <section className="mt-6">
+              <FarmingInsights
                 weather={weather}
-                isLoading={weatherLoading}
-                error={weatherError}
+                weatherLoading={weatherLoading}
                 hasLocation={hasFarmLocation}
-              />
-              <MarketSummaryCard
+                summary={summary}
                 commodity={featuredCommodity}
-                isLoading={marketLoading}
-                dataAvailable={dataAvailable}
+                marketLoading={marketLoading}
               />
             </section>
 
-            {/* Green Flora AI — the central experience: ask anything about
-                weather, prices, crops or schemes, by voice or text. */}
+            {/* Green Flora AI */}
             <section id="assistant" className="mt-6 scroll-mt-24">
               <AssistantPanel />
             </section>
 
-            {/* My Farm snapshot — the farmer's key numbers at a glance */}
+            {/* My Farm snapshot */}
             <section className="mt-6">
               <div className="mb-3 flex items-center justify-between gap-3">
                 <div className="flex min-w-0 items-center gap-2">
@@ -211,18 +210,7 @@ export default function DashboardPage() {
               </div>
             </section>
 
-            {/* A few small, data-driven insights */}
-            <FarmingInsights
-              weather={weather}
-              weatherLoading={weatherLoading}
-              hasLocation={hasFarmLocation}
-              summary={summary}
-              commodity={featuredCommodity}
-              marketLoading={marketLoading}
-            />
-
-            {/* Government Farmer Support — official helpline record from
-                Supabase. Anchored so the sidebar can deep-link to it. */}
+            {/* Government Farmer Support */}
             <section id="government-support" className="mt-6 scroll-mt-24">
               <GovernmentSupportCard />
             </section>

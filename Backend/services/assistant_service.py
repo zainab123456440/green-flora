@@ -33,6 +33,7 @@ invent weather/prices/products, and every tool returns honest
 import io
 import json
 import logging
+import re
 from datetime import datetime, timedelta, timezone
 from typing import Any, Generator, Optional
 
@@ -125,6 +126,48 @@ class AssistantService:
         # (key, timestamp, value) greeting cache.
         self._greeting_cache: dict[str, tuple[float, str]] = {}
 
+    def _sanitize_link_stream(self, generator: Generator[dict, None, None]) -> Generator[dict, None, None]:
+        """
+        Intercepts the SSE event stream and forcefully strips Markdown links 
+        [Text](URL) and citation markers from text deltas, properly handling chunks 
+        split mid-link.
+        """
+        buffer = ""
+        # Matches: [text](url) OR ([text](url)) OR 【citation】 with optional leading spaces
+        link_regex = re.compile(r'\s*(?:\(?\[[^\]]+\]\([^)]+\)\)?|【[^】]+】)')
+        
+        for event in generator:
+            if event.get("type") == "delta":
+                buffer += event.get("text", "")
+                
+                # If there's an open bracket/parenthesis, we might be mid-link. 
+                # Hold the stream until it finishes writing the link.
+                if "[" in buffer or "【" in buffer:
+                    # Clean fully formed links currently in the buffer
+                    buffer = link_regex.sub("", buffer)
+                    
+                    # Check if a link/citation is still incomplete
+                    last_open_bracket = max(buffer.rfind("["), buffer.rfind("【"))
+                    last_close_paren = max(buffer.rfind(")"), buffer.rfind("】"))
+                    
+                    # If we have an open bracket but haven't closed it yet,
+                    # swallow this chunk and wait for the rest of the URL to stream in.
+                    if last_open_bracket > last_close_paren:
+                        continue
+                
+                # If the buffer has safe text, emit it and clear the buffer
+                if buffer:
+                    yield _sse_ready({"type": "delta", "text": buffer})
+                    buffer = ""
+            else:
+                yield event
+                
+        # Yield any remaining text when the stream finishes
+        if buffer:
+            buffer = link_regex.sub("", buffer)
+            if buffer:
+                yield _sse_ready({"type": "delta", "text": buffer})
+
     # ==================================================================
     # Public: chat (streaming)
     # ==================================================================
@@ -185,7 +228,9 @@ class AssistantService:
         # ---- Primary provider: OpenAI (streaming) --------------------
         if self._openai:
             try:
-                yield from self._run_openai(system_prompt, conversation, farmer, state)
+                yield from self._sanitize_link_stream(
+                    self._run_openai(system_prompt, conversation, farmer, state)
+                )
                 return
             except _TransientAIError as exc:
                 if state["emitted_text"]:
@@ -220,7 +265,9 @@ class AssistantService:
         # ---- Fallback provider: Gemini -------------------------------
         if self._gemini:
             try:
-                yield from self._run_gemini(system_prompt, conversation, farmer, state)
+                yield from self._sanitize_link_stream(
+                    self._run_gemini(system_prompt, conversation, farmer, state)
+                )
             except Exception as exc:
                 logger.warning("Gemini fallback failed: %s", exc)
                 yield {
@@ -817,24 +864,33 @@ Today: {now.strftime('%A, %d %B %Y')} (Pakistan Standard Time).
 {farmer_context}
 
 ## How to communicate
-- The farmer may write in English, Urdu (اردو), Roman Urdu, or a mix. Replying in the SAME language and script is a HARD requirement — detect the script of their latest message and match it exactly:
-  - Latin letters used for Urdu words (e.g. "Aaj gehu ka rate kya hai?") = Roman Urdu → write the ENTIRE reply in Roman Urdu (Latin letters). Never answer in Urdu script.
-  - Urdu script (اردو حروف) → write the entire reply in Urdu script.
-  - English → reply in simple English.
-  Never translate the farmer into another language and never mention translation.
-- Be concise and practical: answer the question directly first, then add short useful advice. Prefer short paragraphs or a few bullets over long essays.
-- Use simple, farmer-friendly words. If a technical term is needed, explain it in one short phrase.
-- Money is Pakistani Rupees (Rs). Always report prices with their unit and date exactly as the tools provide.
-- Be warm and respectful. It is fine to return a brief greeting (e.g. السلام علیکم) when the farmer greets you, but keep it short.
+- Reply in the same language and script as the farmer's latest message.
+- Be concise, direct, natural, friendly, and practical.
+- Give the answer first. Do not explain your reasoning or retrieval process.
+- Prefer 1–4 short sentences unless the farmer asks for detail.
+- Do not unnecessarily repeat the question.
+- Do not use phrases such as "according to", "based on the data", "I found",
+  "I searched", "the source says", or similar source/retrieval language.
+- Do not mention databases, APIs, models, tools, services, websites, articles,
+  books, sources, citations, URLs, links, or search results in the answer.
+- Never include a URL or hyperlink in the farmer-facing answer.
+- Use confident wording when the available information is sufficient.
+- If information is genuinely unavailable, say so simply and briefly.
 
-## Tools — Green Flora's trusted data (use FIRST)
-- get_weather: current conditions + 7-day forecast for the farmer's farm location (or a named place).
-- get_crop_market_data: official daily AMIS mandi prices — current price, trend, per-market comparison. Understands Urdu and Roman-Urdu crop names (gehu, tamatar, ...).
-- search_agricultural_products: Green Flora's product dataset with real brands, active ingredients, dosages and prices.
-Web search is also available for anything Green Flora's data does not cover.
-- For weather at the farm, crop prices, or product recommendations → ALWAYS prefer these internal tools over web search.
-- Use web search ONLY when the question needs information outside Green Flora's data (e.g. government schemes, subsidies, a disease or technique not in the dataset).
-- If you used web search, mention briefly that the information comes from the internet.
+## Information and tools
+- Use Green Flora's internal data FIRST.
+- For weather, use get_weather.
+- For crop/mandi prices, use get_crop_market_data.
+- For agricultural products, fertilizers, pesticides, weedicides and related
+  recommendations, use search_agricultural_products.
+- Use web search only when the required information is not available through
+  Green Flora's internal data.
+- Web search is a background research mechanism, not something to expose to
+  the farmer.
+- Never tell the farmer that web search was used.
+- Never include web URLs, citations, source names, website names, article names,
+  or links in the final answer.
+- Use the useful information you find and answer the farmer naturally.
 
 ## Data integrity (critical — never break these rules)
 - NEVER invent weather, prices, market data, product names, dosages, or dates. If a tool reports that data is unavailable, tell the farmer honestly and offer what you can instead.
