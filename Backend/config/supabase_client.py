@@ -1,25 +1,47 @@
 """
-supabase_client.py
+Centralized Supabase client for Green Flora.
 
-Centralized Supabase client used by every backend module that needs
-to talk to the database or the built-in Supabase Auth service.
-
-The client is instantiated once with the service-role key (never the
-anon key) so the backend can perform privileged operations such as
-reading user metadata or managing sessions.
-
-If SUPABASE_URL or SUPABASE_SERVICE_KEY are empty (e.g. fresh clone,
-local demo mode), the module still imports cleanly but `supabase` will
-be ``None``.  Callers should check for this and fall back to demo data.
+Uses a dedicated HTTPX client configured for stable HTTP/1.1 connections.
+This avoids intermittent HTTP/2 socket errors on Windows.
 """
 
 from typing import Optional
 
-from supabase import Client, create_client
+import httpx
+from supabase import Client, ClientOptions, create_client
 
 from config.settings import settings
 
+
 supabase: Optional[Client] = None
 
+
 if settings.supabase_url and settings.supabase_service_key:
-    supabase = create_client(settings.supabase_url, settings.supabase_service_key)
+
+    http_client = httpx.Client(
+        http2=False,
+        timeout=httpx.Timeout(
+            connect=10.0,
+            read=30.0,
+            write=30.0,
+            pool=10.0,
+        ),
+        limits=httpx.Limits(
+            max_connections=20,
+            max_keepalive_connections=10,
+            keepalive_expiry=30.0,
+        ),
+    )
+
+    options = ClientOptions(
+        httpx_client=http_client,
+        postgrest_client_timeout=30,
+        storage_client_timeout=30,
+        function_client_timeout=30,
+    )
+
+    supabase = create_client(
+        settings.supabase_url,
+        settings.supabase_service_key,
+        options=options,
+    )
