@@ -1,1135 +1,574 @@
-# GREEN FLORA — PROJECT CONTEXT
+ary
+/
+project context.md
 
-## 1. Project Identity
 
-**Project Name:** Green Flora
+Green Flora --- Final Project Context
+Project Identity
+Project Name: Green Flora
+Project Type: AI-powered smart agriculture web application
+Target Users: Pakistani farmers
+Status: Completed final-term application
+Primary Goal: Provide practical agricultural information, AI
+assistance, market information, weather information, voice interaction,
+and farm-profit calculations through one farmer-friendly platform.
 
-**Project Type:** AI-powered smart agriculture platform
+1. Final Problem Statement
+Farmers frequently need information from multiple sources before making
+a farming decision. Weather, market prices, farm economics, and
+agricultural product information are often separated across different
+websites, applications, or informal sources.
 
-**Primary Target:** Pakistani farmers
+Green Flora addresses this problem by providing a single web platform
+where farmers can access important information and interact with an AI
+assistant using normal language.
 
-**Project Stage:** Hackathon MVP / working prototype
+The application is designed to reduce information friction rather than
+replace farmers or agricultural professionals.
 
-**Development Constraint:** The project must be built with approximately zero additional budget. Existing free tiers, open-source technologies, demo data, and limited existing API credits should be prioritized.
+2. Final Product Scope
+The completed product contains the following major areas:
 
-**Development Deadline:** 7 days for the hackathon MVP.
+A. Farmer Dashboard
+The dashboard provides a consolidated view of:
 
----
+farmer/farm context;
 
-# 2. Project Vision
+current weather;
 
-Green Flora is a farmer-focused digital agricultural assistant designed to bring important farming information and decision support into one simple platform.
+market highlights;
 
-The system should help a farmer understand:
+quick actions;
 
-* What is happening with their farm
-* What the weather is likely to do
-* Whether a crop may have a disease or pest problem
-* What treatment or management options may be appropriate
-* What crops are selling for in the market
-* What machinery is appropriate for a farming task
-* Whether the farmer should buy, rent, or hire machinery
-* What options fit the farmer's budget
-* When a human agricultural professional should be consulted
-* How to access these capabilities using voice, especially Urdu
+AI assistant;
 
-Green Flora should not simply be an information website.
+important application information.
 
-It should behave as an **AI-powered farm decision-support assistant**.
+The interface is responsive and designed around a simple agricultural
+visual identity.
 
-The system should combine farmer context, structured agricultural data, external information, AI reasoning, and human expert escalation to provide practical recommendations.
+B. Farmer Profile / My Farm
+The application stores relevant farmer and farm information.
 
----
+This context can be used by the dashboard, weather module, and AI
+assistant.
 
-# 3. Core Problem
+C. Weather
+Weather is provided through Open-Meteo.
 
-Farmers often need information from many different sources:
+The final implementation focuses on basic useful forecast information:
 
-* Weather services
-* Agricultural extension/professionals
-* Market prices
-* Crop disease information
-* Fertilizer and pesticide information
-* Machinery information
-* Cost calculations
-* Local agricultural knowledge
+temperature;
 
-Green Flora aims to reduce this fragmentation.
+feels-like temperature;
 
-Instead of requiring a farmer to search multiple platforms, Green Flora should provide a single farmer-friendly interface where the farmer can ask:
+humidity;
 
-> "What should I do?"
+precipitation;
 
-and receive an answer based on their:
+weather condition;
 
-* Crop
-* Farm size
-* Location
-* Crop stage
-* Weather
-* Disease symptoms
-* Budget
-* Market situation
-* Machinery availability
+wind;
 
----
+forecast rainfall probability;
 
-# 4. Target Users
+seven-day forecast.
 
-## Primary User
+It is not an advanced climate or precision-agriculture weather
+model.
 
-Pakistani farmers, particularly farmers who may prefer:
+D. Market Trends and Daily Prices
+The market module displays agricultural prices and trends using
+structured data stored in Supabase/PostgreSQL.
 
-* Simple interfaces
-* Urdu
-* Voice interaction
-* Visual information
-* Practical recommendations rather than technical explanations
+The project includes an AMIS Pakistan data-ingestion workflow operated
+through GitHub Actions.
 
-## Secondary Users
+The market system supports:
 
-Potential future users include:
+current/latest prices;
 
-* Agricultural professionals
-* Agronomists
-* Crop disease specialists
-* Agricultural machinery specialists
-* Agricultural service providers
-* Agricultural organizations
+units;
 
-For the hackathon, expert profiles can use clearly identified **demo/seeded data**.
+historical movement;
 
----
+trends;
 
-# 5. Main Six Features
+market comparisons;
 
-Green Flora has six major farmer-facing capabilities.
+crop-name normalization;
 
-## Feature 1 — Weather & Agricultural Weather Intelligence
+dashboard market summaries.
 
-The weather module should provide:
+E. AI Farming Assistant
+The assistant is the main AI feature.
 
-* Current temperature
-* Humidity
-* Rain probability
-* Rainfall information
-* Wind speed
-* Weather forecast
-* Multi-day forecast
-* Weather alerts
+It can:
 
-The important part is that Green Flora should convert weather information into agricultural meaning.
+answer agricultural questions;
 
-Example:
+use farmer context;
 
-Instead of only showing:
+retrieve weather;
 
-> Temperature: 32°C
-> Rain probability: 80%
+retrieve market information;
 
-Green Flora should explain:
+search agricultural product data;
 
-> Rain is likely tomorrow. If you are planning a pesticide spray, consider whether the expected rainfall could interfere with the treatment and check the product label or consult an expert.
+use web search when internal information is insufficient;
 
-Weather can also be used by other parts of the system for:
+provide concise farmer-friendly answers;
 
-* Disease-risk reasoning
-* Irrigation planning
-* Spraying decisions
-* Harvest planning
-* Field-operation planning
+respond in English, Urdu, or Roman Urdu according to the farmer's
+input.
 
-Weather data is dynamic and should display appropriate timestamps/source context.
+The primary reasoning model is GPT-5.6 Luna through the OpenAI Responses
+API.
 
-If a live weather API is unavailable during the demo, the application must have a demo fallback.
+Gemini Flash is used as a transient-failure fallback.
 
----
+F. Voice Assistant
+Voice interaction allows the farmer to:
 
-# 6. Feature 2 — Crop Disease Image Identification
+record speech;
 
-The Crop Doctor allows a farmer to:
+transcribe it;
 
-1. Upload a crop/leaf image
-2. Send the image to an AI vision capability
-3. Receive a likely disease/pest/stress identification
-4. See confidence or uncertainty
-5. See symptoms
-6. Receive recommended next steps
-7. See relevant agricultural input/treatment information
-8. Estimate approximate treatment cost
-9. Contact an agricultural expert when necessary
+send the text to the same AI assistant;
 
-Example flow:
+receive the response;
 
-Farmer uploads:
+optionally hear the response through text-to-speech.
 
-> Image of diseased wheat leaf
+Voice supports Urdu/English and mixed usage according to the
+speech/model capabilities.
 
-System returns:
+G. Agricultural Product Data
+A structured agricultural-product dataset is available to the assistant.
 
-> Possible disease: [Disease]
+It includes information such as:
 
-Then:
+agricultural category;
 
-* Confidence
-* Observed symptoms
-* Recommended management
-* Relevant treatment/input options
-* Estimated cost
-* Warning/limitations
-* "Ask an Expert" option
+local problem;
 
-The system must not present uncertain AI identification as guaranteed fact.
+scientific target;
 
-High-risk or uncertain cases should encourage professional confirmation.
+brand;
 
----
+company;
 
-# 7. Feature 3 — Urdu / Regional Voice Assistant
+active ingredient/formulation;
 
-Green Flora should provide a voice-first interaction option.
+dosage;
 
-The farmer should be able to:
+approximate price.
 
-1. Press a microphone button
-2. Speak naturally
-3. Convert speech to text
-4. Send the question to the Farm Assistant
-5. Receive an answer
-6. Optionally hear the answer using text-to-speech
+The AI is instructed to use this data rather than fabricate product
+information.
 
-Primary language:
+H. Profit Calculator
+The Profit Calculator is an important completed feature.
 
-* Urdu
+It estimates:
 
-Potential future languages:
+total production;
 
-* Punjabi
-* Sindhi
-* Other Pakistani regional languages
+expected revenue;
 
-The first MVP should prioritize Urdu.
+total farming cost;
 
-Example:
+estimated profit;
 
-Farmer says:
+profit per acre;
 
-> "Meri gandum ki fasal mein peelay dhabbe aa rahe hain. Kya karun?"
+profit margin;
 
-The system should understand the request and provide an appropriate response.
+break-even selling price.
 
-Voice is an **interface**, not a separate intelligence system.
+The calculations are deterministic and run locally in the browser.
 
-The same Farm Assistant should work through:
+This feature adds direct farm-economics support to the application.
 
-* Text
-* Voice
+I. Government Support
+The final interface includes a government agriculture support/helpline
+section.
 
----
+This replaced the previously planned private agricultural expert-booking
+experience.
 
-# 8. Feature 4 — Market Trends & Daily Crop Prices
+3. Technology Context
+Frontend
+Next.js
 
-The market module should provide agricultural market information.
+React
 
-Initial crops can include:
+TypeScript
 
-* Wheat
-* Rice
-* Maize
-* Cotton
-* Sugarcane
-* Potato
-* Tomato
-* Onion
+Tailwind CSS
 
-The system should support:
+Recharts
 
-* Current/latest available price
-* Market
-* Date
-* Unit
-* Historical prices
-* Trend visualization
-* Price comparison
+Backend
+Python
 
-The system should avoid pretending that historical trends guarantee future prices.
+FastAPI
 
-The purpose is decision support.
+Pydantic
 
-Example:
+REST APIs
 
-> Wheat price has increased compared with the previous recorded period.
+streaming/SSE for assistant responses
 
-The farmer can then consider this information along with other factors.
+Database
+Supabase
 
-For the hackathon MVP, seeded/curated market data is acceptable.
+PostgreSQL
 
-Live market scraping should be treated as a later enhancement unless it can be implemented reliably without jeopardizing the core application.
+Row Level Security where applicable
 
----
+AI
+OpenAI Responses API
 
-# 9. Feature 5 — Agricultural Experts & Professionals
+GPT-5.6 Luna
 
-Green Flora should provide a human escalation path.
+Gemini Flash fallback
 
-AI should not attempt to replace agricultural professionals.
+GPT-4o-mini utility tasks
 
-When:
+gpt-4o-mini-transcribe
 
-* AI confidence is low
-* The problem is complex
-* The farmer requests a professional
-* The issue may require physical inspection
-* The decision is important or high-risk
+gpt-4o-mini-tts
 
-the system should provide:
+hosted web search
 
-* Expert profile
-* Specialization
-* Experience
-* Rating
-* Contact option
-* Booking option
+function/tool calling
 
-Possible expert categories:
+External Data
+Open-Meteo for weather
 
-* Crop disease specialist
-* Agronomist
-* Soil specialist
-* Irrigation specialist
-* Agricultural machinery specialist
+AMIS Pakistan for market data
 
-For the hackathon, expert profiles may be seeded demo data.
+Automation
+GitHub Actions for scheduled AMIS market-data ingestion
 
-Calling can use a phone link where appropriate.
+Charts
+Recharts
 
-Booking can be implemented as a simple functional form that stores the booking in the database.
+Deployment
+cloud-hosted Next.js frontend;
 
----
+cloud-hosted FastAPI backend;
 
-# 10. Feature 6 — AI Farm Advisor
+managed Supabase database;
 
-This is the central decision-support capability.
+external AI/data APIs.
 
-The Farm Advisor combines:
+4. AI Assistant Context
+The assistant is not intended to be a generic chatbot.
 
-* Farmer profile
-* Farm information
-* Crop
-* Farm size
-* Location
-* Crop stage
-* Weather
-* Market information
-* Disease analysis
-* Agricultural input data
-* Machinery information
-* Budget
+It is a domain-focused farming assistant with access to application
+context and trusted tools.
 
-The objective is to answer practical questions.
+Internal tools
+The assistant can access:
 
-Example:
+get_weather
+    ↓
+Open-Meteo
 
-> "I have 12 acres of wheat. I need harvesting but I only have PKR 50,000. What should I do?"
+get_crop_market_data
+    ↓
+Market service
+    ↓
+AMIS-ingested Supabase data
 
-The system should consider:
+search_agricultural_products
+    ↓
+Supabase agricultural products
+Web search is available when internal Green Flora information is
+insufficient.
 
-* Required machinery
-* Farm size
-* Budget
-* Purchase cost
-* Rental possibility
-* Hiring possibility
-* Alternatives
+Source priority
+The assistant follows:
 
-Possible answer:
+Green Flora internal data
+        ↓
+External web search if necessary
+        ↓
+Answer
+It must not guess structured agricultural data.
 
-> Hiring a combine harvester may be more practical than purchasing one for this farm size and budget.
+5. Language Context
+The assistant is designed for Pakistani farmers and supports:
 
-The Farm Advisor should be able to combine multiple modules rather than operating as an isolated chatbot.
+English;
 
----
+Urdu script;
 
-# 11. Supporting Module — Farmer Profile
+Roman Urdu;
 
-The farmer profile is the foundation of personalization.
+mixed language questions.
 
-Possible information:
+Examples of supported farmer-style input include:
 
-* Farmer name
-* Phone number
-* Preferred language
-* Farm location
-* Farm area
-* Fields
-* Crops
-* Crop stage
-* Irrigation information
-* Machinery owned/accessible
-* Budget information where appropriate
+"Aaj gehu ka rate kya hai?"
 
-For the hackathon, use a seeded demo farmer.
+"گندم کا آج کیا ریٹ ہے؟"
 
-Example:
+"What is the weather on my farm today?"
 
-**Name:** Muhammad Asif
+The assistant is instructed to match the language/script of the farmer's
+latest message.
 
-**Farm:** 12 acres
+6. Data Integrity Context
+A core project rule is:
 
-**Crop:** Wheat
+Never fabricate data.
 
-**Location:** Punjab, Pakistan
+The AI should not invent:
 
-The profile should be editable.
+weather values;
 
----
+market prices;
 
-# 12. Supporting Module — Farm & Field Map
+agricultural product prices;
 
-Green Flora should include an interactive farm map.
+dosages;
 
-The map can show:
+dates;
 
-* Farmer location
-* Farm location
-* Field boundaries where available
-* Field name
-* Crop
-* Area
-* Crop stage
+market names;
 
-The map should eventually provide geographic context for:
+unavailable data.
 
-* Weather
-* Farm records
-* Crop health
-* Field-level recommendations
+If a tool cannot retrieve information, it returns an unavailable state
+so the assistant can communicate that limitation honestly.
 
-Use open-source/free mapping technology for the MVP where possible.
+This is especially important for agricultural and financial decision
+support.
 
----
+7. Profit Calculator Context
+The calculator is intentionally independent of the AI.
 
-# 13. Supporting Module — Agricultural Inputs
+Inputs
+The farmer provides values such as:
 
-Green Flora should maintain structured agricultural input information.
+farm acreage;
 
-Potential categories:
+expected production;
 
-* Fertilizers
-* Herbicides
-* Fungicides
-* Insecticides
-* Other crop-management products
+selling price;
 
-Useful fields include:
+farming costs.
 
-* Category
-* Local problem/target
-* Scientific target/action
-* Product/brand
-* Company
-* Formulation
-* Active ingredient
-* Dosage per acre
-* Approximate price
-* Crop
-* Target disease/pest/problem
+Outputs
+The application calculates:
 
-The project has an agricultural dataset containing approximately 48 major agricultural products for the initial knowledge layer.
+Total Production
+Expected Revenue
+Total Farming Cost
+Estimated Profit
+Profit per Acre
+Profit Margin
+Break-even Selling Price
+Core formulas
+Expected Revenue = Production × Selling Price
 
-The AI should retrieve relevant structured information rather than inventing product details.
+Estimated Profit = Expected Revenue − Total Cost
 
----
+Profit per Acre = Estimated Profit ÷ Acres
 
-# 14. Supporting Module — Budget & Cost Intelligence
+Profit Margin = Estimated Profit ÷ Expected Revenue × 100
 
-Green Flora should be budget-aware.
+Break-even Price = Total Cost ÷ Production
+Because the calculation is performed locally, it is fast and does not
+consume AI/API credits.
 
-The farmer should not receive a recommendation without considering affordability when budget information is relevant.
+8. Market Data Context
+The project separates market-data collection from market presentation.
 
-The system can compare:
+AMIS
+ ↓
+GitHub Actions
+ ↓
+Python ingestion
+ ↓
+Supabase
+ ↓
+Market UI / Dashboard / AI
+This ensures that the market page and AI assistant can work from the
+same structured source.
 
-* Product cost
-* Estimated treatment cost
-* Machinery purchase cost
-* Machinery rental cost
-* Machinery hiring/service cost
-* Farm operation cost
+The AI does not generate market prices.
 
-A central concept is:
+9. Weather Context
+Weather follows the same data-integrity principle.
 
-## Buy vs Rent vs Hire
+Farmer location
+      ↓
+Open-Meteo
+      ↓
+Current + forecast data
+      ↓
+Weather page
+      +
+Dashboard
+      +
+AI assistant
+The final weather system is intentionally straightforward and useful.
 
-Example:
+It does not claim:
 
-Farmer:
+satellite weather;
 
-> 12 acres wheat, harvesting required, budget PKR 50,000.
+sensor-based soil intelligence;
 
-Green Flora:
+advanced crop-risk forecasting;
 
-> Purchase: Not recommended
-> Rental: Possible
-> Hiring: Recommended
+climate prediction;
 
-The system should favor practical and economical options.
+precision-agriculture analytics.
 
----
+10. Voice Context
+Voice is a layer around the existing assistant rather than a separate
+intelligence system.
 
-# 15. Supporting Module — Mechanization
+Voice Input
+    ↓
+Speech-to-Text
+    ↓
+Normal AI Assistant
+    ↓
+Text Response
+    ↓
+Text-to-Speech
+The same assistant tools and data sources are used for voice and text.
 
-Mechanization should be an AI decision-support module, not simply a machinery catalogue.
+11. Security Context
+The application uses environment variables for secrets and keeps
+external API credentials on the backend.
 
-Important machinery categories include:
+Important security practices include:
 
-## Land Preparation
+secret management through environment variables;
 
-* Tractor
-* Plough
-* Cultivator
-* Disc plough
-* Disc harrow
-* Rotavator
+no API keys in frontend code;
 
-## Planting / Sowing
+database access policies;
 
-* Seed drill
-* Zero-till drill
-* Planter
-* Rice transplanter
+request validation;
 
-## Crop Care
+CORS configuration;
 
-* Boom sprayer
-* Power sprayer
-* Fertilizer spreader
-* Mechanical weeder
+bounded input sizes;
 
-## Irrigation
+graceful external-service failure handling.
 
-* Water pump
-* Solar pump
-* Drip irrigation equipment
-* Sprinkler equipment
+12. Reliability Context
+The assistant contains fallback and failure-handling logic.
 
-## Harvesting
+OpenAI transient failure
+OpenAI
+  │
+  ├── success → answer
+  │
+  └── transient failure → Gemini fallback
+Voice failure
+STT fails → typed input remains available
 
-* Reaper
-* Combine harvester
-* Crop-specific harvesters
+TTS fails → written answer remains available
+Data failure
+Data unavailable
+      ↓
+Do not fabricate
+      ↓
+Tell the farmer honestly
+13. Final Scope Boundary
+The following were discussed during project planning but are not part
+of the completed final application:
 
-## Post-Harvest
+Not implemented
+computer vision;
 
-* Thresher
-* Sheller
-* Cleaner
-* Dryer
+crop disease image classification;
 
-## Transport
+crop image diagnosis;
 
-* Tractor trolley
-* Trailer
+vision models;
 
-## Precision Agriculture
+PAI-EAS vision deployment;
 
-Future:
+satellite imagery;
 
-* GPS guidance
-* Sensors
-* Drones
-* Precision machinery
+drone imagery;
 
-The system should consider:
+IoT sensors;
 
-* Crop
-* Farm size
-* Task
-* Budget
-* Availability
-* Buy/rent/hire options
+precision agriculture;
 
----
+advanced soil intelligence;
 
-# 16. Dashboard
+machinery recommendation;
 
-The dashboard is the main entry point.
+machinery marketplace;
 
-It should show a concise overview of the farmer's farm.
+expert profiles/booking;
 
-Possible dashboard sections:
+Qdrant;
 
-* Greeting
-* Farm name/location
-* Total acreage
-* Current crops
-* Weather summary
-* Weather alert
-* Market summary
-* Crop health status
-* Upcoming farm tasks
-* Farm map
-* Quick AI Assistant
-* Voice button
-* Quick actions
+RAG pipeline;
 
-Example quick actions:
+LangGraph multi-agent system;
 
-* Check Weather
-* Diagnose Crop
-* Check Market
-* Ask Green Flora
-* Find Machinery
-* Talk to Expert
+n8n orchestration.
 
-The dashboard should be visually polished but not overloaded.
+These must not be described as completed functionality in the final
+submission.
 
----
+14. Why the Final Architecture Is Appropriate
+The project intentionally uses a smaller, defensible architecture
+instead of adding technologies only for presentation.
 
-# 17. Proposed Application Pages
+For example:
 
-The MVP should use a multi-page structure.
+Weather uses a real weather API.
 
-Suggested routes:
+Market prices use structured AMIS-derived data.
 
-```text
-/dashboard
-/my-farm
-/weather
-/crop-doctor
-/market
-/mechanization
-/experts
-/voice-assistant
-/farm-costs
-/settings
-```
+The AI uses function tools to access trusted data.
 
-The navigation should remain consistent across pages.
+Web search is used as a fallback for information outside internal
+datasets.
 
-The application must be responsive, especially for mobile devices.
+Profit calculations are deterministic and local.
 
----
+Voice uses the same assistant rather than duplicating AI logic.
 
-# 18. AI Architecture
+Supabase stores persistent application data.
 
-Green Flora should be designed as a modular agentic system.
+GitHub Actions automates market-data refreshes.
 
-Conceptually:
+This creates a coherent full-stack application rather than a collection
+of unrelated demonstrations.
 
-```text
-Farmer
-   |
-   v
-Farm Assistant
-   |
-   +---- Weather Agent
-   |
-   +---- Market Agent
-   |
-   +---- Crop Health Agent
-   |
-   +---- Input/Treatment Agent
-   |
-   +---- Mechanization Agent
-   |
-   +---- Budget Agent
-   |
-   +---- Expert/Escalation Agent
-```
+15. Final Project Summary
+Green Flora is a completed smart agriculture platform for Pakistani
+farmers.
 
-These do not need to be separate deployed applications.
+Its final implementation combines:
 
-They can be Python modules/services inside one FastAPI backend.
+Farmer Context + Weather + Market Data + AI Assistant + Voice +
+Agricultural Product Information + Profit Calculator + Government
+Support
 
-The Farm Assistant acts as the coordinator.
+into one web application.
 
----
+The project demonstrates full-stack software engineering, API
+integration, database design, scheduled data ingestion, AI tool calling,
+conversational UX, speech processing, deterministic financial
+calculations, and deployment-oriented engineering.
 
-# 19. Farm Assistant Behavior
-
-The Farm Assistant should:
-
-1. Understand farmer intent
-2. Retrieve relevant farm context
-3. Determine which capability is required
-4. Call the appropriate service/agent
-5. Retrieve relevant data
-6. Reason over the information
-7. Produce a concise farmer-friendly response
-8. Explain important assumptions
-9. Escalate to a professional when necessary
-
-Example:
-
-Farmer asks:
-
-> "Should I spray my wheat today?"
-
-The assistant can consider:
-
-```text
-Farmer
-+
-Wheat
-+
-Farm location
-+
-Weather
-+
-Crop stage
-+
-Treatment context
-```
-
-and produce a practical response.
-
----
-
-# 20. Technology Stack
-
-## Frontend
-
-Use:
-
-* Next.js
-* React
-* TypeScript
-* Tailwind CSS
-* Recharts
-* Leaflet/OpenStreetMap where appropriate
-
-## Backend
-
-Use:
-
-* Python
-* FastAPI
-* Pydantic
-
-## Database
-
-Use:
-
-* Supabase
-* PostgreSQL
-
-## AI
-
-Primary development/application AI should prioritize available free tiers.
-
-Potential AI services:
-
-* Gemini
-* Existing OpenAI credits as backup
-
-The approximately $4 existing OpenAI credit should not be consumed unnecessarily during development.
-
-## Voice
-
-Initially prefer browser-native/free speech capabilities.
-
-Avoid paid voice infrastructure unless it is available at no cost.
-
-## Deployment
-
-Use free-tier hosting where possible.
-
-The project must not depend on paid infrastructure for the hackathon MVP.
-
----
-
-# 21. Zero-Budget Development Strategy
-
-The project has essentially no additional budget.
-
-Therefore:
-
-* Prefer open-source libraries
-* Prefer free API tiers
-* Prefer seeded demo data
-* Prefer browser-native capabilities
-* Avoid unnecessary paid APIs
-* Avoid paid subscriptions
-* Avoid paid infrastructure
-* Keep external API usage low
-* Build fallback functionality
-
-Existing OpenAI credits should be treated as a limited backup resource.
-
----
-
-# 22. Demo Mode
-
-Green Flora must support a reliable demo mode.
-
-Example:
-
-```text
-DEMO_MODE=true
-```
-
-When a live service fails or is unavailable, the application should gracefully use appropriate demo/seeded information where possible.
-
-Possible demo fallbacks:
-
-* Demo farmer
-* Demo farm
-* Demo market prices
-* Demo weather
-* Demo disease results
-* Demo machinery
-* Demo experts
-
-The fallback should preserve the user experience.
-
-The application must never crash simply because an external API is unavailable.
-
----
-
-# 23. Demo Farmer
-
-A seeded farmer can be used for the hackathon demonstration.
-
-Example:
-
-```text
-Name:
-Muhammad Asif
-
-Farm:
-12 acres
-
-Crop:
-Wheat
-
-Location:
-Punjab, Pakistan
-
-Budget:
-PKR 150,000
-```
-
-This data is for demonstration purposes.
-
-The application should make it obvious that seeded expert profiles, prices, or other demo-only information are prototype data where appropriate.
-
----
-
-# 24. Ideal Hackathon Demonstration
-
-The final demo should tell one connected story.
-
-## Step 1 — Dashboard
-
-Open Green Flora.
-
-Show:
-
-* Farmer
-* Farm
-* Wheat
-* 12 acres
-* Weather
-* Market
-* Farm map
-
-## Step 2 — Weather
-
-Show weather forecast.
-
-Explain how the weather affects a farming operation.
-
-## Step 3 — Disease
-
-Upload a crop image.
-
-Show:
-
-* Possible disease
-* Confidence
-* Symptoms
-* Recommended action
-* Estimated cost
-
-## Step 4 — Budget
-
-Show how the recommendation changes according to the farmer's budget.
-
-## Step 5 — Market
-
-Show wheat market price/trend.
-
-## Step 6 — Mechanization
-
-Ask:
-
-> "I need to harvest 12 acres but I cannot afford to buy a combine."
-
-Green Flora recommends:
-
-> Hire/rent rather than purchase.
-
-## Step 7 — Voice
-
-Ask in Urdu:
-
-> "Meri fasal ke liye abhi kya karna chahiye?"
-
-The Farm Assistant responds using farm context.
-
-## Step 8 — Expert
-
-If the disease result is uncertain:
-
-> "Would you like to speak with a crop specialist?"
-
-Click:
-
-> Call Expert / Book Consultation
-
-This demonstrates that Green Flora connects AI with human expertise.
-
----
-
-# 25. Seven-Day MVP Priority
-
-Because development time is only seven days, priorities are:
-
-## Day 1
-
-Foundation:
-
-* Project structure
-* Frontend setup
-* Backend setup
-* Supabase setup
-* Context files
-* Basic navigation
-* Dashboard skeleton
-
-## Day 2
-
-Farm:
-
-* Farmer profile
-* Farm data
-* Field data
-* Map
-* Weather
-
-## Day 3
-
-Market:
-
-* Market database
-* Prices
-* Trends
-* Charts
-* Farm costs
-
-## Day 4
-
-Crop Doctor:
-
-* Image upload
-* AI image analysis
-* Disease result
-* Treatment recommendation
-* Cost
-* Demo fallback
-
-## Day 5
-
-Farm Assistant:
-
-* AI integration
-* Intent handling
-* Farm context
-* Weather/market/disease connections
-
-## Day 6
-
-Final capabilities:
-
-* Voice
-* Mechanization
-* Experts
-* Booking/calling
-* Integration
-
-## Day 7
-
-Do not add major new functionality.
-
-Focus on:
-
-* Bug fixing
-* API testing
-* Error handling
-* Demo fallback
-* UI polish
-* Mobile responsiveness
-* Deployment
-* Demo preparation
-
----
-
-# 26. MVP Scope Rules
-
-The following are NOT priorities for the seven-day MVP:
-
-* Nationwide production deployment
-* Hundreds of real experts
-* Real payment processing
-* Complete agricultural coverage
-* Perfect disease detection
-* Training a custom large AI model
-* Hundreds of machinery types
-* Complex authentication
-* Advanced satellite analytics
-* Full production marketplace
-* Perfect live market scraping
-* Complex microservice infrastructure
-
-These can be future features.
-
-The MVP should demonstrate the concept convincingly.
-
----
-
-# 27. Development Principles
-
-The application should be:
-
-* Modular
-* Maintainable
-* Responsive
-* Simple for farmers
-* API-driven
-* Database-backed
-* AI-assisted
-* Failure-tolerant
-* Demo-safe
-
-Do not introduce unnecessary complexity.
-
-Do not create separate microservices unless there is a strong reason.
-
-Do not add a new library when an existing dependency can solve the problem.
-
-Do not replace working functionality unnecessarily.
-
----
-
-# 28. AI Coding Rules
-
-Any AI coding assistant working on this repository must:
-
-1. Read the project context before implementing significant functionality.
-2. Inspect existing files before modifying them.
-3. Preserve existing working functionality.
-4. Avoid duplicate components.
-5. Avoid duplicate API endpoints.
-6. Follow the existing architecture.
-7. Follow the database schema.
-8. Follow the API contract.
-9. Never hardcode API keys.
-10. Use environment variables for secrets.
-11. Do not modify unrelated files.
-12. Explain significant architectural changes.
-13. Keep implementation simple enough for the seven-day MVP.
-14. Prefer reusable components.
-15. Add error handling for external APIs.
-16. Preserve demo fallback behavior.
-17. Avoid unnecessary dependencies.
-18. Test changes before moving to another feature.
-19. Update documentation when architecture changes.
-20. Never claim that an implementation works without testing it.
-
----
-
-# 29. Source of Truth
-
-The Green Flora repository is the source of truth for the project.
-
-Important project documents:
-
-```text
-PROJECT_CONTEXT.md
-ARCHITECTURE.md
-DATABASE_SCHEMA.md
-API_CONTRACT.md
-DEVELOPMENT_RULES.md
-CURRENT_STATUS.md
-```
-
-AI tools should use these files to understand the project.
-
-If a previous conversation conflicts with the repository documentation, the current repository state and documented decisions should be treated as authoritative unless explicitly changed by the project owner.
-
----
-
-# 30. Current Development Philosophy
-
-Green Flora is being built as a **hackathon MVP**, not a production agricultural platform.
-
-The objective is to demonstrate:
-
-> AI + agricultural data + farmer context + multimodal interaction + practical recommendations + human expert escalation.
-
-The system should feel like one coherent product.
-
-Features should not feel like disconnected mini-projects.
-
-The farmer should be able to move naturally from:
-
-```text
-Weather
-   ↓
-Crop Health
-   ↓
-Treatment
-   ↓
-Cost
-   ↓
-Market
-   ↓
-Machinery
-   ↓
-Expert
-```
-
-and the Farm Assistant should understand the shared context.
-
----
-
-# 31. Core Product Principle
-
-Green Flora should answer the question:
-
-> **"Given my farm situation, what should I do next?"**
-
-rather than simply:
-
-> "Here is some agricultural information."
-
-The system should prioritize:
-
-* Context
-* Practicality
-* Affordability
-* Simplicity
-* Transparency
-* Human escalation
-
----
-
-# 32. Final Product Definition
-
-**Green Flora is an AI-powered smart agriculture platform for Pakistani farmers that combines weather intelligence, crop disease image analysis, market trends, Urdu/regional voice interaction, agricultural expert access, farm mechanization guidance, cost and budget intelligence, farm mapping, and personalized AI recommendations in one farmer-friendly platform.**
-
-The ultimate goal is to make agricultural decision-making more accessible, understandable, affordable, and actionable for farmers.
-
----
-
-# END OF PROJECT CONTEXT
+The final documentation should describe these implemented capabilities
+accurately and should not include earlier experimental or planned
+features as if they were completed.
