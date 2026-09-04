@@ -1,0 +1,1 @@
+Python pipeline that scrapes daily commodity/market prices from the AMIS Pakistan website, normalises them, and upserts results into a Supabase database with idempotent ingestion logging.

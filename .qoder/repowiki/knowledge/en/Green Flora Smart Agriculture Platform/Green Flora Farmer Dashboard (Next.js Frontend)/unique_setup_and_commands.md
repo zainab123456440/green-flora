@@ -1,0 +1,1 @@
+Requires a backend at `NEXT_PUBLIC_API_BASE_URL` (defaults to `http://localhost:8000`); run `npm run dev` for the Next dev server, `npm run build` for production builds, and `npm start` to serve the built output. Authentication relies on JWT access/refresh tokens persisted under keys `gf_access_token` / `gf_refresh_token` in `localStorage`.

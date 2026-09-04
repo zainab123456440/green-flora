@@ -1,0 +1,1 @@
+FastAPI application that wires together farmer, field, auth, crop doctor, market, support, and assistant route modules into a single Green Flora smart-agriculture server.

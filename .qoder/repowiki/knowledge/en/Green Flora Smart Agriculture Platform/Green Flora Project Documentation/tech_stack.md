@@ -1,0 +1,1 @@
+Markdown-based documentation using Mermaid diagrams for architecture/sequence/flow visuals; references a Next.js + React + TypeScript frontend, a Python FastAPI backend with Supabase/PostgreSQL, OpenAI (GPT-5.6 Luna) as primary LLM with Gemini Flash fallback, Open-Meteo for weather, and AMIS Pakistan market data ingested via GitHub Actions scheduled workflows.

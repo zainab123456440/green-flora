@@ -1,0 +1,11 @@
+schema_version: 1
+module_path: backend/farmer_field_domain
+title: Farmer & Field Domain API (Routes + Services)
+scope:
+    - Backend/routes/farmer.py
+    - Backend/routes/field.py
+    - Backend/services/farmer_service.py
+    - Backend/services/field_service.py
+source_files: []
+depends_on: []
+related_to: []

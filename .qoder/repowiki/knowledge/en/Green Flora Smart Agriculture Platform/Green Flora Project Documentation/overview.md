@@ -1,0 +1,1 @@
+Markdown documentation for the Green Flora smart agriculture platform covering system architecture, backend APIs, frontend modules, AI integrations, data pipelines, and deployment guidance.

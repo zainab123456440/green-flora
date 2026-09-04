@@ -1,0 +1,1 @@
+FastAPI with Server-Sent Events streaming; OpenAI SDK (Responses API for primary model `gpt-5.6-luna`, Chat Completions for utility tasks, Audio transcription/TTS); Google GenAI SDK as fallback provider; httpx for Open-Meteo weather; Supabase PostgREST for agricultural product search; AMIS market data via internal `market_service`.

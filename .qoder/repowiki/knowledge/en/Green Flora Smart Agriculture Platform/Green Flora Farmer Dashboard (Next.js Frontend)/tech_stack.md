@@ -1,0 +1,1 @@
+Next.js 16 with React 19 (App Router, client components via `'use client'`), Tailwind CSS v4 + @tailwindcss/postcss, TypeScript 5, Leaflet + react-leaflet for maps, Recharts for charts, Lucide icons, Google Translate integration injected via `next/script`.

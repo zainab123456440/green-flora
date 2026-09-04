@@ -1,0 +1,1 @@
+Market data refresh is performed by a scheduled GitHub Action (`amis-scraper.yml`) that scrapes AMIS Pakistan, normalises commodity names, and upserts results into Supabase — no local command is required once `SUPABASE_URL` and `SUPABASE_SERVICE_KEY` secrets are configured.

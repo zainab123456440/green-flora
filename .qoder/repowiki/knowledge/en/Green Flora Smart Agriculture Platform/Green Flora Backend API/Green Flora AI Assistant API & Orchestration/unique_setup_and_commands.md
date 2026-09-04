@@ -1,0 +1,1 @@
+Requires `OPENAI_API_KEY` and optionally `GEMINI_API_KEY` plus `settings.ai_main_model` / `ai_fallback_model` / `ai_utility_model` / `ai_transcribe_model` / `ai_tts_model`; `DEMO_MODE=true` allows unauthenticated access where user_id resolves to None. Gemini SDK import is lazy so missing `google-genai` does not crash startup.

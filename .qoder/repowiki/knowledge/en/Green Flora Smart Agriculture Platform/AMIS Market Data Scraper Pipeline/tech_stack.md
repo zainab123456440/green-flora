@@ -1,0 +1,1 @@
+Python scraper using `requests` for HTTP, `beautifulsoup4` for HTML parsing of the ASP.NET WebForms AMIS site, and the `supabase` Python SDK for Postgres upserts; configuration via `python-dotenv` loading secrets from environment variables or a local `.env` file.

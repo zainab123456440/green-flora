@@ -1,0 +1,6 @@
+- External configuration (URLs, credentials, timeouts, table names) is centralised in `config.py` and loaded from environment variables / `.env` via `python-dotenv`; no hard-coded secrets or endpoints elsewhere.
+- Database operations are isolated in `db.py` and always filter payloads against a runtime-discovered column set so the pipeline stays resilient to schema drift.
+- Idempotent upserts use Supabase's `upsert(..., on_conflict=...)` with a fallback row-by-row SELECT/UPDATE/INSERT path when the unique constraint is missing.
+- Each commodity scrape is wrapped in try/except so a single failure increments a fail counter but does not abort the rest of the pipeline.
+- Ingestion runs are tracked by inserting a `data_ingestion_logs` row at start and updating it at end with status (`success`/`partial`/`failed`), record counts, and optional error messages.
+- HTTP requests go through `_fetch_with_retry`, which implements exponential back-off with configurable `MAX_RETRIES` and `RETRY_BACKOFF` delays.

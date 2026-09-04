@@ -1,0 +1,1 @@
+FastAPI `APIRouter` with Pydantic request/response models; Supabase Python client for PostgreSQL access; optional demo mode driven by `config.settings.demo_mode` returning seeded data from `data.demo_farmer` / `data.demo_fields`.

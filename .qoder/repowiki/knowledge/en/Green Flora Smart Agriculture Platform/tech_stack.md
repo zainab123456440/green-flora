@@ -1,0 +1,1 @@
+Supabase PostgreSQL is the shared persistence layer for both the backend and the scraper; OpenAI (GPT-5.6 Luna) plus Gemini Flash are the shared AI providers used by the backend's assistant; GitHub Actions drives the scheduled AMIS market-data ingestion pipeline.

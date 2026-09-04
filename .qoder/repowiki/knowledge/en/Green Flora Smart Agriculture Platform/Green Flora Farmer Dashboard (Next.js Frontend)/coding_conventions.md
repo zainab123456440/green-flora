@@ -1,0 +1,6 @@
+- Feature data fetching is encapsulated in custom React hooks under `Hooks/` (e.g. `useFarmer`, `useFields`, `useWeather`) that return `{ data, isLoading, error }` shapes consumed by page components.
+- Each domain has a dedicated service file under `services/` that centralizes HTTP calls, token injection via an `includeAuth` flag, timeout handling, and throws a typed error class (`AuthApiError` or equivalent) instead of raw exceptions.
+- Global runtime state (auth, language) is exposed through React Context providers wrapped at the root `layout.tsx`, with a corresponding `useXxx()` hook that throws if used outside its provider.
+- Pages are implemented as client components using the `'use client'` directive and compose their UI from small, feature-scoped components under `components/<feature>/` plus shared primitives in `components/ui/`.
+- Internationalization uses a single `t(key)` function from `LanguageContext` keyed against `lib/translations`, with language preference persisted to `localStorage` and applied by toggling `document.documentElement.dir` between `ltr` and `rtl`.
+- UI states are rendered via reusable `LoadingState`, `ErrorState`, and `EmptyState` components rather than ad-hoc inline conditionals inside pages.

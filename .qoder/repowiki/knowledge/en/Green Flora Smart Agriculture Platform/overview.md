@@ -1,0 +1,1 @@
+Full-stack smart-agriculture platform that composes a Next.js farmer dashboard, a FastAPI backend, and a scheduled AMIS market-data scraper around a shared Supabase database and AI assistant.
