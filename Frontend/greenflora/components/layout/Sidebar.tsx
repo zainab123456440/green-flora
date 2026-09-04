@@ -10,6 +10,7 @@ import {
   CloudSun,
   Stethoscope,
   TrendingUp,
+  Calculator,
   LogOut,
   X,
   Leaf,
@@ -25,12 +26,41 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { label: "Dashboard", href: "/dashboard", icon: <LayoutDashboard className="h-4.5 w-4.5" /> },
-  { label: "Farmer Profile", href: "/profile", icon: <User className="h-4.5 w-4.5" /> },
-  { label: "My Farm", href: "/my-farm", icon: <MapPin className="h-4.5 w-4.5" /> },
-  { label: "Weather", href: "/weather", icon: <CloudSun className="h-4.5 w-4.5" /> },
-  { label: "Market Prices", href: "/market", icon: <TrendingUp className="h-4.5 w-4.5" /> },
-  { label: "Crop Doctor", href: "/crop-doctor", icon: <Stethoscope className="h-4.5 w-4.5" /> },
+  {
+    label: "Dashboard",
+    href: "/dashboard",
+    icon: <LayoutDashboard className="h-4.5 w-4.5" />,
+  },
+  {
+    label: "Farmer Profile",
+    href: "/profile",
+    icon: <User className="h-4.5 w-4.5" />,
+  },
+  {
+    label: "My Farm",
+    href: "/my-farm",
+    icon: <MapPin className="h-4.5 w-4.5" />,
+  },
+  {
+    label: "Weather",
+    href: "/weather",
+    icon: <CloudSun className="h-4.5 w-4.5" />,
+  },
+  {
+    label: "Market Prices",
+    href: "/market",
+    icon: <TrendingUp className="h-4.5 w-4.5" />,
+  },
+  {
+    label: "Profit Calculator",
+    href: "/profit-calculator",
+    icon: <Calculator className="h-4.5 w-4.5" />,
+  },
+  {
+    label: "Crop Doctor",
+    href: "/crop-doctor",
+    icon: <Stethoscope className="h-4.5 w-4.5" />,
+  },
 ];
 
 interface SidebarProps {
@@ -46,6 +76,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
 
   async function handleLogout() {
     setIsLoggingOut(true);
+
     try {
       await logout();
     } finally {
@@ -83,6 +114,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary-600 to-primary-800 shadow-sm">
               <Leaf className="h-4.5 w-4.5 text-primary-50" />
             </div>
+
             <span className="text-base font-semibold tracking-tight text-neutral-900">
               Green Flora
             </span>
@@ -118,11 +150,14 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                   >
                     <span
                       className={
-                        isActive ? "text-primary-200" : "text-neutral-500"
+                        isActive
+                          ? "text-primary-200"
+                          : "text-neutral-500"
                       }
                     >
                       {item.icon}
                     </span>
+
                     {item.label}
                   </Link>
                 </li>
@@ -139,8 +174,10 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
             className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-neutral-600 transition-colors duration-150 hover:bg-danger-50 hover:text-danger-600 disabled:cursor-not-allowed disabled:opacity-60"
           >
             <LogOut className="h-4.5 w-4.5" />
+
             {isLoggingOut ? "Signing out…" : "Log out"}
           </button>
+
           <p className="px-3 pt-2.5 text-[11px] text-neutral-400">
             Green Flora
           </p>
