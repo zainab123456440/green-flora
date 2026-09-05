@@ -89,7 +89,7 @@ class Settings:
             "CORS_ORIGINS",
             default=[
                 "http://localhost:3000",
-                "https://green-flora-lbwh.vercel.app",
+                "https://green-flora-frontend.vercel.app",
             ],
         )
 

@@ -1,0 +1,1 @@
+Requires `SUPABASE_URL` and `SUPABASE_SERVICE_KEY` env vars for live mode; set `DEMO_MODE=true` to run without a database using in-memory cached demo farmer and fields.

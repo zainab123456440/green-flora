@@ -1,0 +1,6 @@
+- Each route validates input through a Pydantic schema from `schemas.assistant` and delegates business logic to `assistant_service`, keeping handlers under 30 lines of routing glue.
+- Authentication is resolved centrally by `_resolve_user_id`, which returns None in demo mode or raises 401 Bearer in live mode when no token is present.
+- Streaming chat yields a uniform event dict shape (`type=status|delta|done|error`) wrapped by `_sse_ready` to guarantee JSON-serializability before being emitted as SSE frames.
+- Provider failures are classified into `_TransientAIError` (timeout/rate-limit/5xx) to trigger automatic Gemini fallback, while non-transient errors surface as `AssistantError` with farmer-friendly messages.
+- Tool implementations return an explicit `{available: False, reason, message}` payload on any failure instead of raising, so the model can honestly report unavailable data rather than fabricating values.
+- Farmer profile and field data are loaded once per request via `load_farmer_snapshot` and reused for both system-prompt rendering and tool parameter resolution (e.g., farm coordinates for weather).

@@ -1,0 +1,1 @@
+FastAPI application that mounts per-domain routers (farmer, field, auth, crop doctor, market, support, assistant) behind shared CORS, timing middleware, and a centralized Supabase client.
