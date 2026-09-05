@@ -1,1 +1,0 @@
-FastAPI + Uvicorn as the web server; Pydantic v2 schemas under `schemas/`; Supabase Python client shared through `config/supabase_client.py`; environment-driven configuration via `config/settings.py` reading `.env`.

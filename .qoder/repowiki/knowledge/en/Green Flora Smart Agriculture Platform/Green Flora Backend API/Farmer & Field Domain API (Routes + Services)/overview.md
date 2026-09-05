@@ -1,1 +1,0 @@
-FastAPI routes and service layer exposing farmer profile, field, crop cycle, and farm summary endpoints backed by Supabase with an in-memory demo-mode fallback.

@@ -1,4 +1,0 @@
-- External API credentials (OpenAI, Gemini, Supabase) are kept server-side in environment variables and never exposed to the frontend.
-- The AI assistant uses function/tool calling against Supabase-backed services (weather, market, agricultural products) instead of generating numbers from memory.
-- Structured application data is stored in Supabase tables rather than in vector stores or LLM context, keeping deterministic facts separate from language reasoning.
-- Scheduled background jobs (AMIS ingestion) run independently of the web server through GitHub Actions, decoupling data freshness from request latency.

@@ -1,1 +1,0 @@
-Next.js 16 client-side dashboard for farmers, providing authentication, field and crop management, weather/market data, AI assistant chat, and bilingual English/Urdu UI.

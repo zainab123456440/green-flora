@@ -1,6 +1,0 @@
-- Each document begins with a `<cite>` block listing all referenced source files under a 'Referenced Files in This Document' header.
-- Documents follow a fixed section order: Introduction, Project Structure, Core Components, Architecture Overview, Detailed Component Analysis, Dependency Analysis, Performance Considerations, Troubleshooting Guide, Conclusion.
-- Architecture and data flows are illustrated with embedded Mermaid diagrams (graph, sequenceDiagram, flowchart) placed near the relevant textual description.
-- Section sources are appended at the end of each subsection using bracketed citations linking to specific file paths and line ranges.
-- Feature documentation is split per domain into sibling Markdown files (e.g., one file per backend route, one per frontend feature module) rather than monolithic pages.
-- External service interactions are consistently described with explicit provider names (OpenAI, Gemini, Open-Meteo, AMIS, Supabase) and fallback behavior noted in sequence diagrams.

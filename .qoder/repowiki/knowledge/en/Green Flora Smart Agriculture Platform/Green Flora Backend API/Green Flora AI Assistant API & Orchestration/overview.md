@@ -1,1 +1,0 @@
-FastAPI endpoints and orchestration layer that stream AI-assisted farming advice via OpenAI (primary) with Gemini fallback, plus speech-to-text, text-to-speech, and a localized dashboard greeting.

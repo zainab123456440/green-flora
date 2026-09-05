@@ -1,1 +1,0 @@
-No build or runtime commands are required; documents are authored as plain Markdown and rely on a Markdown renderer that supports Mermaid diagrams and relative file links to source code.

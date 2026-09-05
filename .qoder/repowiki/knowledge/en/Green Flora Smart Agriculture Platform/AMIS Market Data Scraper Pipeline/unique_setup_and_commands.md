@@ -1,1 +1,0 @@
-Run via `python -m Scraper.run` (full run), `--dry-run` to scrape without writing to Supabase, `--commodity-ids 1,88` to limit to specific commodities, and `--verbose` for DEBUG logging. Requires `SUPABASE_URL` and `SUPABASE_SERVICE_KEY` environment variables (or a `Scraper/.env` file) before execution.

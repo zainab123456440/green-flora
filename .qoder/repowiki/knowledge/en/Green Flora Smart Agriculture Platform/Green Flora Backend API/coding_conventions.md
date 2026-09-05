@@ -1,4 +1,0 @@
-- Each feature area is organized as a trio of sibling files: `routes/<feature>.py`, `services/<feature>_service.py`, and `schemas/<feature>.py`, with the router imported and mounted in `main.py`.
-- Shared runtime configuration is read from `config/settings.py` (loaded from `.env`) rather than passed per-route.
-- Database access goes through the singleton Supabase client exposed by `config/supabase_client.py`, keeping data-layer instantiation out of routes and services.
-- Authentication state is injected into endpoints via the shared `get_current_user` dependency in `dependencies/auth.py` instead of manual token parsing.

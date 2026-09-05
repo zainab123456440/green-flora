@@ -1,6 +1,0 @@
-- Routes stay thin: they only parse requests, call a single service method, and wrap responses in Pydantic response models — no business logic or direct DB calls.
-- Authentication is resolved uniformly via a local `_resolve_user_id` helper that returns `None` in demo mode and raises HTTP 401 when no token is present in live mode.
-- Services expose a module-level singleton instance (`farmer_service`, `field_service`) imported by routes instead of instantiating classes per request.
-- Each public service method branches on `settings.demo_mode` at the top, handling the in-memory demo path and the live Supabase path separately.
-- Incoming update payloads are partial updates built with `payload.model_dump(exclude_unset=True)` and rejected with 400 if empty.
-- Database column names are decoupled from the API contract via explicit mapping dicts (`_FIELD_API_TO_DB`, `_translate_profile_updates`, etc.) so schema drift stays isolated inside the service.
