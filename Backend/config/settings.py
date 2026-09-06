@@ -1,4 +1,3 @@
-
 """
 settings.py
 
@@ -71,6 +70,14 @@ class Settings:
         self.database_url: str = os.getenv(
             "DATABASE_URL",
             "",
+        )
+
+        # ---------------------------------------------------------
+        # Frontend URL (For Supabase Auth Redirects)
+        # ---------------------------------------------------------
+        self.frontend_url: str = os.getenv(
+            "FRONTEND_URL",
+            "https://green-flora-frontend.vercel.app",
         )
 
         # ---------------------------------------------------------
