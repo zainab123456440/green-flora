@@ -176,3 +176,29 @@ export function getMe(): Promise<AuthUser> {
     { includeAuth: true }
   );
 }
+
+// ---------------------------------------------------------------------------
+// Password reset
+// ---------------------------------------------------------------------------
+
+export function requestPasswordReset(
+  contact: string
+): Promise<{ detail: string }> {
+  return request<{ detail: string }>("/api/auth/reset-password/request", {
+    method: "POST",
+    body: JSON.stringify({ contact }),
+  });
+}
+
+export function confirmPasswordReset(
+  accessToken: string,
+  newPassword: string
+): Promise<{ detail: string }> {
+  return request<{ detail: string }>("/api/auth/reset-password/confirm", {
+    method: "POST",
+    body: JSON.stringify({
+      access_token: accessToken,
+      new_password: newPassword,
+    }),
+  });
+}

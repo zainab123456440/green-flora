@@ -4,8 +4,18 @@
  * Green Flora login page.
  *
  * Renders inside AuthLayout (nature-inspired background, centered card).
- * Provides email-or-phone + password login with show/hide toggle,
- * loading state, inline error display, and a link to the signup page.
+ * Provides email + password login with show/hide toggle, a forgot-password
+ * link, a simple English/Urdu text toggle, loading state, inline error
+ * display, and a link to the signup page.
+ *
+ * NOTE: Phone-based login has been removed. The backend only accepts
+ * an email address for the "contact" field (see services/auth_service.py).
+ *
+ * NOTE: The language toggle here is intentionally simple and local to
+ * this page (just a few strings swapped via useState) — it does not
+ * share state with the dashboard's language system. If you later want
+ * this page to follow the same language as the dashboard, it needs to
+ * be wired into that shared context/provider instead.
  */
 
 "use client";
@@ -21,9 +31,49 @@ import Button from "@/components/ui/Button";
 import { useAuth } from "@/Hooks/useAuth";
 import { AuthApiError } from "@/services/AuthAPI";
 
+type Lang = "en" | "ur";
+
+const TEXT: Record<Lang, {
+  title: string;
+  subtitle: string;
+  emailLabel: string;
+  passwordLabel: string;
+  forgot: string;
+  submit: string;
+  noAccount: string;
+  createAccount: string;
+  toggleLabel: string;
+}> = {
+  en: {
+    title: "Welcome back",
+    subtitle: "Sign in to your Green Flora account",
+    emailLabel: "Email",
+    passwordLabel: "Password",
+    forgot: "Forgot password?",
+    submit: "Sign In",
+    noAccount: "Don't have an account?",
+    createAccount: "Create account",
+    toggleLabel: "اردو",
+  },
+  ur: {
+    title: "خوش آمدید",
+    subtitle: "اپنے گرین فلورا اکاؤنٹ میں سائن ان کریں",
+    emailLabel: "ای میل",
+    passwordLabel: "پاس ورڈ",
+    forgot: "پاس ورڈ بھول گئے؟",
+    submit: "سائن ان",
+    noAccount: "اکاؤنٹ نہیں ہے؟",
+    createAccount: "اکاؤنٹ بنائیں",
+    toggleLabel: "English",
+  },
+};
+
 export default function LoginPage() {
   const router = useRouter();
   const { login } = useAuth();
+
+  const [lang, setLang] = useState<Lang>("en");
+  const t = TEXT[lang];
 
   const [contact, setContact] = useState("");
   const [password, setPassword] = useState("");
@@ -55,15 +105,22 @@ export default function LoginPage() {
 
   return (
     <AuthLayout>
-      <form onSubmit={handleSubmit} noValidate>
-        <h1 className="mb-1 text-lg font-semibold text-neutral-900">
-          Welcome back
-        </h1>
-        <p className="mb-6 text-sm text-neutral-500">
-          Sign in to your Green Flora account
-        </p>
+      <div className="mb-2 flex justify-end">
+        <button
+          type="button"
+          onClick={() => setLang((v) => (v === "en" ? "ur" : "en"))}
+          className="text-sm font-medium text-primary-700 hover:text-primary-800 transition-colors"
+        >
+          {t.toggleLabel}
+        </button>
+      </div>
 
-        {/* Error message */}
+      <form onSubmit={handleSubmit} noValidate dir={lang === "ur" ? "rtl" : "ltr"}>
+        <h1 className="mb-1 text-lg font-semibold text-neutral-900">
+          {t.title}
+        </h1>
+        <p className="mb-6 text-sm text-neutral-500">{t.subtitle}</p>
+
         {error && (
           <div
             className={`mb-4 rounded-md bg-danger-50 border border-danger-100 px-3 py-2.5 text-sm text-danger-600 ${
@@ -77,19 +134,33 @@ export default function LoginPage() {
 
         <div className="space-y-4">
           <Input
-            label="Email or phone"
+            label={t.emailLabel}
             name="contact"
-            type="text"
+            type="email"
             autoComplete="username"
-            placeholder="you@example.com or +92..."
+            placeholder="you@example.com"
             value={contact}
             onChange={(e) => setContact(e.target.value)}
             required
           />
 
           <div className="relative">
+            <div className="mb-1 flex items-center justify-between">
+              <label
+                htmlFor="password"
+                className="text-sm font-medium text-neutral-700"
+              >
+                {t.passwordLabel}
+              </label>
+              <Link
+                href="/forgot-password"
+                className="text-sm font-medium text-primary-700 hover:text-primary-800 transition-colors"
+                tabIndex={0}
+              >
+                {t.forgot}
+              </Link>
+            </div>
             <Input
-              label="Password"
               name="password"
               type={showPassword ? "text" : "password"}
               autoComplete="current-password"
@@ -122,16 +193,16 @@ export default function LoginPage() {
           isLoading={isLoading}
           className="mt-6 w-full"
         >
-          Sign In
+          {t.submit}
         </Button>
 
         <p className="mt-5 text-center text-sm text-neutral-500">
-          Don&apos;t have an account?{" "}
+          {t.noAccount}{" "}
           <Link
             href="/signup"
             className="font-medium text-primary-700 hover:text-primary-800 transition-colors"
           >
-            Create account
+            {t.createAccount}
           </Link>
         </p>
       </form>

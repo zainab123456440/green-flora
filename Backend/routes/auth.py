@@ -1,18 +1,21 @@
 """
 routes/auth.py
 
-Authentication endpoints: signup, login, refresh, logout, and /me.
+Authentication endpoints: signup, login, refresh, logout, password
+reset, and /me.
 
 Routes stay thin: they validate input via schemas, delegate to
 ``auth_service``, and shape the response.  No business logic lives
 here (project-context.md, Section 28, rule 6).
 
 Endpoints:
-    POST /api/auth/signup   -> create a new account
-    POST /api/auth/login    -> authenticate
-    POST /api/auth/refresh  -> refresh an expired token
-    POST /api/auth/logout   -> sign out (protected)
-    GET  /api/auth/me       -> current user info (protected)
+    POST /api/auth/signup                  -> create a new account
+    POST /api/auth/login                   -> authenticate
+    POST /api/auth/refresh                 -> refresh an expired token
+    POST /api/auth/reset-password/request  -> email a reset link
+    POST /api/auth/reset-password/confirm  -> set a new password
+    POST /api/auth/logout                  -> sign out (protected)
+    GET  /api/auth/me                      -> current user info (protected)
 """
 
 import logging
@@ -24,6 +27,9 @@ from schemas.auth import (
     AuthResponse,
     AuthUserResponse,
     LoginRequest,
+    MessageResponse,
+    PasswordResetConfirmRequest,
+    PasswordResetRequest,
     SignupRequest,
     TokenRefreshRequest,
 )
@@ -78,7 +84,7 @@ def signup(payload: SignupRequest) -> AuthResponse:
 
 @router.post("/login", response_model=AuthResponse)
 def login(payload: LoginRequest) -> AuthResponse:
-    """Authenticate with email/phone + password."""
+    """Authenticate with email + password."""
     try:
         result = auth_service.login(payload.contact, payload.password)
     except Exception as exc:
@@ -96,6 +102,40 @@ def refresh(payload: TokenRefreshRequest) -> AuthResponse:
         raise _exc_to_http(exc)
 
     return AuthResponse(**result)
+
+
+@router.post("/reset-password/request", response_model=MessageResponse)
+def request_password_reset(payload: PasswordResetRequest) -> MessageResponse:
+    """
+    Email the user a password-reset link.
+
+    Always returns the same generic message, whether or not an
+    account exists for that email — this avoids leaking which emails
+    are registered.
+    """
+    try:
+        auth_service.request_password_reset(payload.contact)
+    except AuthError as exc:
+        # Bad input (e.g. not an email at all) — safe to surface directly.
+        raise _exc_to_http(exc)
+    except Exception:
+        # Any other failure is swallowed on purpose; see auth_service.
+        pass
+
+    return MessageResponse(
+        detail="If an account exists for this email, a reset link has been sent."
+    )
+
+
+@router.post("/reset-password/confirm", response_model=MessageResponse)
+def confirm_password_reset(payload: PasswordResetConfirmRequest) -> MessageResponse:
+    """Set a new password using the token from the emailed reset link."""
+    try:
+        auth_service.confirm_password_reset(payload.access_token, payload.new_password)
+    except Exception as exc:
+        raise _exc_to_http(exc)
+
+    return MessageResponse(detail="Password has been reset successfully.")
 
 
 # ---------------------------------------------------------------------------

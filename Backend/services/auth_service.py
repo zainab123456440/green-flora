@@ -9,6 +9,29 @@ call these methods and never touch the Supabase client themselves.
 When Supabase is not configured (fresh clone, demo mode), signup and
 login return a ``ServiceUnavailableError`` so the route layer can
 respond with a friendly message instead of crashing.
+
+NOTE: Phone-based signup/login has been intentionally disabled.
+Supabase requires a paid SMS provider (Twilio, etc.) to verify phone
+numbers, which this project does not use. Only email + password is
+supported. If phone auth is reintroduced later, restore the branches
+that call supabase.auth.sign_up / sign_in_with_password with a
+"phone" key, and re-enable phone confirmations in the Supabase
+dashboard (Authentication -> Providers -> Phone).
+
+Password reset flow:
+    1. Frontend calls request_password_reset(email). Supabase emails
+       the user a link to FRONTEND_URL/reset-password containing a
+       recovery access_token (in the URL fragment).
+    2. The reset-password page reads that token and posts it, along
+       with the new password, to confirm_password_reset().
+    3. We verify the token identifies a real user, then use the
+       Supabase *admin* API to set the new password directly (this
+       requires the service-role key, not the anon key).
+
+Requires ``settings.FRONTEND_URL`` to be set (e.g.
+"https://green-flora.vercel.app" in production, "http://localhost:3000"
+in dev) so Supabase knows where to send the user after they click the
+reset link. Add it to config/settings.py if it isn't there yet.
 """
 
 import logging
@@ -30,7 +53,7 @@ class AuthError(Exception):
 
 
 class AuthService:
-    """Handles signup, login, token refresh, and user lookup."""
+    """Handles signup, login, token refresh, password reset, and user lookup."""
 
     # ------------------------------------------------------------------
     # Internal helpers
@@ -52,22 +75,23 @@ class AuthService:
         """
         Create a new Supabase Auth user.
 
+        Email signup only — phone signup is disabled (requires a paid
+        SMS provider we don't use).
+
         Returns a dict with keys: access_token, refresh_token, user_id,
         name, is_new.
         """
         self._ensure_client()
 
+        if not is_email(contact):
+            raise AuthError("Please sign up with an email address.")
+
         options = {"data": {"name": name}}  # stored in user_metadata
 
         try:
-            if is_email(contact):
-                response = supabase.auth.sign_up(
-                    {"email": contact, "password": password, "options": options}
-                )
-            else:
-                response = supabase.auth.sign_up(
-                    {"phone": contact, "password": password, "options": options}
-                )
+            response = supabase.auth.sign_up(
+                {"email": contact, "password": password, "options": options}
+            )
         except Exception as exc:
             logger.warning("Supabase signup failed: %s", exc)
             message = str(exc)
@@ -80,7 +104,7 @@ class AuthService:
             # Email confirmation might be enabled — still return useful info.
             user = response.user
             raise AuthError(
-                "Account created. Please check your email/phone to confirm."
+                "Account created. Please check your email to confirm."
             )
 
         return {
@@ -95,19 +119,20 @@ class AuthService:
         """
         Authenticate an existing user.
 
+        Email login only — phone login is disabled (requires a paid
+        SMS provider we don't use).
+
         Returns the same dict shape as signup().
         """
         self._ensure_client()
 
+        if not is_email(contact):
+            raise AuthError("Please sign in with your email address.")
+
         try:
-            if is_email(contact):
-                response = supabase.auth.sign_in_with_password(
-                    {"email": contact, "password": password}
-                )
-            else:
-                response = supabase.auth.sign_in_with_password(
-                    {"phone": contact, "password": password}
-                )
+            response = supabase.auth.sign_in_with_password(
+                {"email": contact, "password": password}
+            )
         except Exception as exc:
             logger.warning("Supabase login failed: %s", exc)
             raise AuthError("Invalid credentials. Please try again.")
@@ -152,6 +177,56 @@ class AuthService:
             "name": name,
             "is_new": False,
         }
+
+    def request_password_reset(self, contact: str) -> None:
+        """
+        Send a password-reset email via Supabase.
+
+        Always treat this as best-effort from the caller's perspective:
+        the route layer should return the same generic success message
+        whether or not the email exists, to avoid leaking which emails
+        are registered. We still raise AuthError for genuinely bad
+        input (e.g. not an email) so the form can show a useful message.
+        """
+        self._ensure_client()
+
+        if not is_email(contact):
+            raise AuthError("Please enter the email address for your account.")
+
+        redirect_to = f"{settings.FRONTEND_URL.rstrip('/')}/reset-password"
+
+        try:
+            supabase.auth.reset_password_for_email(
+                contact,
+                {"redirect_to": redirect_to},
+            )
+        except Exception as exc:
+            # Log it, but don't tell the caller whether the email exists.
+            logger.warning("Supabase password reset request failed: %s", exc)
+
+    def confirm_password_reset(self, access_token: str, new_password: str) -> None:
+        """
+        Finalize a password reset using the recovery access_token from
+        the emailed reset link, plus a new password chosen by the user.
+        """
+        self._ensure_client()
+
+        try:
+            user_response = supabase.auth.get_user(access_token)
+            user_id = user_response.user.id
+        except Exception as exc:
+            logger.warning("Invalid or expired password reset token: %s", exc)
+            raise AuthError(
+                "This reset link is invalid or has expired. Please request a new one."
+            )
+
+        try:
+            supabase.auth.admin.update_user_by_id(
+                user_id, {"password": new_password}
+            )
+        except Exception as exc:
+            logger.warning("Supabase password update failed: %s", exc)
+            raise AuthError("Could not reset password. Please try again.")
 
     def get_user_from_token(self, access_token: str) -> dict:
         """
