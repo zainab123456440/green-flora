@@ -28,10 +28,11 @@ Password reset flow:
        Supabase *admin* API to set the new password directly (this
        requires the service-role key, not the anon key).
 
-Requires ``settings.FRONTEND_URL`` to be set (e.g.
+Requires ``settings.frontend_url`` to be set (e.g.
 "https://green-flora.vercel.app" in production, "http://localhost:3000"
 in dev) so Supabase knows where to send the user after they click the
-reset link. Add it to config/settings.py if it isn't there yet.
+reset link. Defaults to the production Vercel URL in config/settings.py
+if the FRONTEND_URL environment variable isn't set.
 """
 
 import logging
@@ -187,13 +188,25 @@ class AuthService:
         whether or not the email exists, to avoid leaking which emails
         are registered. We still raise AuthError for genuinely bad
         input (e.g. not an email) so the form can show a useful message.
+
+        NOTE: Config/setup failures (bad settings, Supabase misconfig,
+        network errors) are logged at ERROR level, not swallowed
+        silently at WARNING — those are bugs, not "email doesn't
+        exist" cases, and should be loud in logs/alerts even though
+        the caller still gets a generic success response.
         """
         self._ensure_client()
 
         if not is_email(contact):
             raise AuthError("Please enter the email address for your account.")
 
-        redirect_to = f"{settings.FRONTEND_URL.rstrip('/')}/reset-password"
+        # NOTE: settings.py defines this as `frontend_url` (lowercase).
+        # A previous version of this line read `settings.FRONTEND_URL`
+        # (uppercase), which doesn't exist on the Settings object and
+        # raised an AttributeError on every call — silently swallowed
+        # below, so no reset email was ever actually sent. Keep this
+        # attribute name in sync with config/settings.py.
+        redirect_to = f"{settings.frontend_url.rstrip('/')}/reset-password"
 
         try:
             supabase.auth.reset_password_for_email(
@@ -201,8 +214,15 @@ class AuthService:
                 {"redirect_to": redirect_to},
             )
         except Exception as exc:
-            # Log it, but don't tell the caller whether the email exists.
-            logger.warning("Supabase password reset request failed: %s", exc)
+            # Don't tell the caller whether the email exists — but do
+            # log loudly, since most failures here are config/bugs,
+            # not "email not found" (Supabase doesn't error for that).
+            logger.error(
+                "Password reset email failed to send for %s: %s",
+                contact,
+                exc,
+                exc_info=True,
+            )
 
     def confirm_password_reset(self, access_token: str, new_password: str) -> None:
         """
